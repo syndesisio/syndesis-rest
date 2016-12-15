@@ -22,29 +22,28 @@ import java.io.Serializable;
 
 @Value.Immutable
 @JsonDeserialize(builder = IntegrationTemplateConnectionStep.Builder.class)
-public interface IntegrationTemplateConnectionStep extends WithId<IntegrationTemplateConnectionStep>, Serializable {
+public interface IntegrationTemplateConnectionStep
+    extends WithId<IntegrationTemplateConnectionStep>, Serializable {
 
-    String KIND = "integrationtemplateconnectionstep";
+  String KIND = "integrationtemplateconnectionstep";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    IntegrationTemplate getIntegrationTemplate();
+  IntegrationTemplate getIntegrationTemplate();
 
-    Connection getConnection();
+  Connection getConnection();
 
-    IntegrationTemplateConnectionStep getPreviousStep();
+  IntegrationTemplateConnectionStep getPreviousStep();
 
-    IntegrationTemplateConnectionStep getNextStep();
+  IntegrationTemplateConnectionStep getNextStep();
 
-    @Override
-    default IntegrationTemplateConnectionStep withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default IntegrationTemplateConnectionStep withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableIntegrationTemplateConnectionStep.Builder {
-    }
-
+  class Builder extends ImmutableIntegrationTemplateConnectionStep.Builder {}
 }

@@ -21,11 +21,12 @@ package com.redhat.ipaas.rest.util;
  */
 public interface SortOptions {
 
-    String getSortField();
-    SortDirection getSortDirection();
+  String getSortField();
 
-    enum SortDirection {
-        ASC,
-        DESC;
-    }
+  SortDirection getSortDirection();
+
+  enum SortDirection {
+    ASC,
+    DESC;
+  }
 }

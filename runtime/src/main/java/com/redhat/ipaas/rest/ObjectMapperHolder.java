@@ -20,12 +20,11 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 class ObjectMapperHolder {
 
-    static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
+  static final ObjectMapper OBJECT_MAPPER = createObjectMapper();
 
-    private static ObjectMapper createObjectMapper() {
-        ObjectMapper om = new ObjectMapper();
-        om.registerModule(new Jdk8Module());
-        return om;
-    }
-
+  private static ObjectMapper createObjectMapper() {
+    ObjectMapper om = new ObjectMapper();
+    om.registerModule(new Jdk8Module());
+    return om;
+  }
 }

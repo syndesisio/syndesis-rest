@@ -32,19 +32,17 @@ import java.io.Serializable;
 @JsonDeserialize(builder = ComponentGroup.Builder.class)
 public interface ComponentGroup extends WithId<ComponentGroup>, WithName, Serializable {
 
-    String KIND = "componentgroup";
+  String KIND = "componentgroup";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    @Override
-    default ComponentGroup withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default ComponentGroup withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableComponentGroup.Builder {
-    }
-
+  class Builder extends ImmutableComponentGroup.Builder {}
 }

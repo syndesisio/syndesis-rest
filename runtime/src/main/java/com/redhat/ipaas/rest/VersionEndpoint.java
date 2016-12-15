@@ -26,10 +26,10 @@ import javax.ws.rs.core.Response;
 @Path("/version")
 public class VersionEndpoint {
 
-    @GET
-    @Produces("text/plain")
-    @ApiOperation(value = "Get the version")
-    public Response doGet() {
-        return Response.ok(Version.getVersion()).build();
-    }
+  @GET
+  @Produces("text/plain")
+  @ApiOperation(value = "Get the version")
+  public Response doGet() {
+    return Response.ok(Version.getVersion()).build();
+  }
 }

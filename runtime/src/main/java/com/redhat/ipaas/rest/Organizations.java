@@ -28,12 +28,12 @@ import java.util.Set;
 @Path("/organizations")
 public class Organizations {
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Get an organization by ID")
-    public Set<Organization> doGet() {
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "Get an organization by ID")
+  public Set<Organization> doGet() {
 
-        Set<Organization> orgs = new HashSet<>();
-        return orgs;
-    }
+    Set<Organization> orgs = new HashSet<>();
+    return orgs;
+  }
 }

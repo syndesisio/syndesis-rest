@@ -31,23 +31,21 @@ import java.util.List;
 @JsonDeserialize(builder = Environment.Builder.class)
 public interface Environment extends WithId<Environment>, WithName, Serializable {
 
-    String KIND = "environment";
+  String KIND = "environment";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    EnvironmentType environmentType();
+  EnvironmentType environmentType();
 
-    List<Organization> organizations();
+  List<Organization> organizations();
 
-    @Override
-    default Environment withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Environment withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableEnvironment.Builder {
-    }
-
+  class Builder extends ImmutableEnvironment.Builder {}
 }

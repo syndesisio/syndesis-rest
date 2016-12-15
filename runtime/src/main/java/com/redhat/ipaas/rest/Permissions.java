@@ -33,36 +33,44 @@ import java.util.Collection;
 @Api(value = "permissions")
 public class Permissions {
 
-    @Inject
-    private DataManager dataMgr;
+  @Inject private DataManager dataMgr;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "List permissions")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = Permission.class)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = "sort", value = "Sort the result list according to the given field value",
-            paramType = "query", dataType = "string"),
-        @ApiImplicitParam(
-            name = "direction", value = "Sorting direction when a 'sort' field is provided. Can be 'asc' " +
-                                        "(ascending) or 'desc' (descending)", paramType = "query", dataType = "string")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List permissions")
+  @ApiResponses(
+    value = {@ApiResponse(code = 200, message = "Success", response = Permission.class)}
+  )
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+      name = "sort",
+      value = "Sort the result list according to the given field value",
+      paramType = "query",
+      dataType = "string"
+    ),
+    @ApiImplicitParam(
+      name = "direction",
+      value =
+          "Sorting direction when a 'sort' field is provided. Can be 'asc' "
+              + "(ascending) or 'desc' (descending)",
+      paramType = "query",
+      dataType = "string"
+    )
+  })
+  public Collection<Permission> list(@Context UriInfo uri) {
+    return dataMgr.fetchAll(
+        Permission.KIND,
+        new ReflectiveSorter<>(Permission.class, new SortOptionsFromQueryParams(uri)));
+  }
 
-    })
-    public Collection<Permission> list(@Context UriInfo uri) {
-        return dataMgr.fetchAll(Permission.KIND,
-            new ReflectiveSorter<>(Permission.class, new SortOptionsFromQueryParams(uri)));
-    }
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Get a permission by ID")
+  public Permission get(
+      @ApiParam(value = "id of the Permission", required = true) @PathParam("id") String id) {
+    Permission permission = dataMgr.fetch(Permission.KIND, id);
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Get a permission by ID")
-    public Permission get(
-        @ApiParam(value = "id of the Permission", required = true) @PathParam("id") String id) {
-        Permission permission = dataMgr.fetch(Permission.KIND, id);
-
-        return permission;
-    }
-
+    return permission;
+  }
 }

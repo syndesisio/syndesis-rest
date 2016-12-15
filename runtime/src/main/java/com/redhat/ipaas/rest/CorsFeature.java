@@ -24,12 +24,11 @@ import javax.ws.rs.ext.Provider;
 @Provider
 public class CorsFeature implements Feature {
 
-    @Override
-    public boolean configure(FeatureContext context) {
-        CorsFilter corsFilter = new CorsFilter();
-        corsFilter.getAllowedOrigins().add("*");
-        context.register(corsFilter);
-        return true;
-    }
-
+  @Override
+  public boolean configure(FeatureContext context) {
+    CorsFilter corsFilter = new CorsFilter();
+    corsFilter.getAllowedOrigins().add("*");
+    context.register(corsFilter);
+    return true;
+  }
 }

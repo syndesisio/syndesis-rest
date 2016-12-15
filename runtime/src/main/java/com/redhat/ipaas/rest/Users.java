@@ -33,36 +33,40 @@ import java.util.Collection;
 @Api(value = "users")
 public class Users {
 
-    @Inject
-    private DataManager dataMgr;
+  @Inject private DataManager dataMgr;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "List users")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = User.class)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = "sort", value = "Sort the result list according to the given field value",
-            paramType = "query", dataType = "string"),
-        @ApiImplicitParam(
-            name = "direction", value = "Sorting direction when a 'sort' field is provided. Can be 'asc' " +
-                                        "(ascending) or 'desc' (descending)", paramType = "query", dataType = "string")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List users")
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = User.class)})
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+      name = "sort",
+      value = "Sort the result list according to the given field value",
+      paramType = "query",
+      dataType = "string"
+    ),
+    @ApiImplicitParam(
+      name = "direction",
+      value =
+          "Sorting direction when a 'sort' field is provided. Can be 'asc' "
+              + "(ascending) or 'desc' (descending)",
+      paramType = "query",
+      dataType = "string"
+    )
+  })
+  public Collection<User> list(@Context UriInfo uri) {
+    return dataMgr.fetchAll(
+        User.KIND, new ReflectiveSorter<>(User.class, new SortOptionsFromQueryParams(uri)));
+  }
 
-    })
-    public Collection<User> list(@Context UriInfo uri) {
-        return dataMgr.fetchAll(User.KIND,
-            new ReflectiveSorter<>(User.class, new SortOptionsFromQueryParams(uri)));
-    }
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Get a user by ID")
+  public User get(@ApiParam(value = "id of the User", required = true) @PathParam("id") String id) {
+    User user = dataMgr.fetch(User.KIND, id);
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Get a user by ID")
-    public User get(
-        @ApiParam(value = "id of the User", required = true) @PathParam("id") String id) {
-        User user = dataMgr.fetch(User.KIND, id);
-
-        return user;
-    }
-
+    return user;
+  }
 }

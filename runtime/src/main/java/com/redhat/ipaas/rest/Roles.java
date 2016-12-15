@@ -33,36 +33,40 @@ import java.util.Collection;
 @Api(value = "roles")
 public class Roles {
 
-    @Inject
-    private DataManager dataMgr;
+  @Inject private DataManager dataMgr;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "List roles")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = Role.class)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = "sort", value = "Sort the result list according to the given field value",
-            paramType = "query", dataType = "string"),
-        @ApiImplicitParam(
-            name = "direction", value = "Sorting direction when a 'sort' field is provided. Can be 'asc' " +
-                                        "(ascending) or 'desc' (descending)", paramType = "query", dataType = "string")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List roles")
+  @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = Role.class)})
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+      name = "sort",
+      value = "Sort the result list according to the given field value",
+      paramType = "query",
+      dataType = "string"
+    ),
+    @ApiImplicitParam(
+      name = "direction",
+      value =
+          "Sorting direction when a 'sort' field is provided. Can be 'asc' "
+              + "(ascending) or 'desc' (descending)",
+      paramType = "query",
+      dataType = "string"
+    )
+  })
+  public Collection<Role> list(@Context UriInfo uri) {
+    return dataMgr.fetchAll(
+        Role.KIND, new ReflectiveSorter<>(Role.class, new SortOptionsFromQueryParams(uri)));
+  }
 
-    })
-    public Collection<Role> list(@Context UriInfo uri) {
-        return dataMgr.fetchAll(Role.KIND,
-            new ReflectiveSorter<>(Role.class, new SortOptionsFromQueryParams(uri)));
-    }
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Get a role by ID")
+  public Role get(@ApiParam(value = "id of the Role", required = true) @PathParam("id") String id) {
+    Role role = dataMgr.fetch(Role.KIND, id);
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Get a role by ID")
-    public Role get(
-        @ApiParam(value = "id of the Role", required = true) @PathParam("id") String id) {
-        Role role = dataMgr.fetch(Role.KIND, id);
-
-        return role;
-    }
-
+    return role;
+  }
 }

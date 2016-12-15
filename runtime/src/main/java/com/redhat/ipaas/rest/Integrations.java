@@ -37,66 +37,72 @@ import java.util.Collection;
 @Api(value = "integrations")
 public class Integrations {
 
-    @Inject
-    private DataManager dataMgr;
+  @Inject private DataManager dataMgr;
 
-    @Context
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "List integrations")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = Integration.class)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = "sort", value = "Sort the result list according to the given field value",
-            paramType = "query", dataType = "string"),
-        @ApiImplicitParam(
-            name = "direction", value = "Sorting direction when a 'sort' field is provided. Can be 'asc' " +
-                                        "(ascending) or 'desc' (descending)", paramType = "query", dataType = "string")
+  @Context
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List integrations")
+  @ApiResponses(
+    value = {@ApiResponse(code = 200, message = "Success", response = Integration.class)}
+  )
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+      name = "sort",
+      value = "Sort the result list according to the given field value",
+      paramType = "query",
+      dataType = "string"
+    ),
+    @ApiImplicitParam(
+      name = "direction",
+      value =
+          "Sorting direction when a 'sort' field is provided. Can be 'asc' "
+              + "(ascending) or 'desc' (descending)",
+      paramType = "query",
+      dataType = "string"
+    )
+  })
+  public Collection<Integration> list(@Context UriInfo uri) {
+    return dataMgr.fetchAll(
+        Integration.KIND,
+        new ReflectiveSorter<>(Integration.class, new SortOptionsFromQueryParams(uri)));
+  }
 
-    })
-    public Collection<Integration> list(@Context UriInfo uri) {
-        return dataMgr.fetchAll(Integration.KIND,
-            new ReflectiveSorter<>(Integration.class, new SortOptionsFromQueryParams(uri)));
-    }
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Get an integration by ID")
+  public Integration get(
+      @ApiParam(value = "id of the Integration", required = true) @PathParam("id") String id) {
+    Integration i = dataMgr.fetch(Integration.KIND, id);
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Get an integration by ID")
-    public Integration get(
-        @ApiParam(value = "id of the Integration", required = true) @PathParam("id") String id) {
-        Integration i = dataMgr.fetch(Integration.KIND, id);
+    return i;
+  }
 
-        return i;
-    }
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes("application/json")
+  @ApiOperation(value = "Create an integration")
+  public Integration create(Integration integration) {
+    return dataMgr.create(integration);
+  }
 
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes("application/json")
-    @ApiOperation(value = "Create an integration")
-    public Integration create(Integration integration) {
-        return dataMgr.create(integration);
-    }
+  @PUT
+  @Path(value = "/{id}")
+  @Consumes("application/json")
+  @ApiOperation(value = "Update a connection")
+  public void update(
+      @ApiParam(value = "id of the connection", required = true) @PathParam("id") String id,
+      Integration integration) {
+    dataMgr.update(integration);
+  }
 
-    @PUT
-    @Path(value = "/{id}")
-    @Consumes("application/json")
-    @ApiOperation(value = "Update a connection")
-    public void update(
-        @ApiParam(value = "id of the connection", required = true) @PathParam("id") String id,
-        Integration integration) {
-        dataMgr.update(integration);
-
-    }
-
-    @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Delete a connection")
-    public void delete(
-        @ApiParam(value = "id of the Integration", required = true) @PathParam("id") String id) {
-        dataMgr.delete(Integration.KIND, id);
-    }
-
-
+  @DELETE
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Delete a connection")
+  public void delete(
+      @ApiParam(value = "id of the Integration", required = true) @PathParam("id") String id) {
+    dataMgr.delete(Integration.KIND, id);
+  }
 }

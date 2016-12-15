@@ -26,35 +26,33 @@ import java.util.Optional;
 @JsonDeserialize(builder = User.Builder.class)
 public interface User extends WithId<User>, Serializable {
 
-    String KIND = "user";
+  String KIND = "user";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    Optional<String> getName();
+  Optional<String> getName();
 
-    Optional<String> getFullName();
+  Optional<String> getFullName();
 
-    Optional<String> getLastName();
+  Optional<String> getLastName();
 
-    Optional<String> getFirstName();
+  Optional<String> getFirstName();
 
-    String getUsername();
+  String getUsername();
 
-    List<Integration> getIntegrations();
+  List<Integration> getIntegrations();
 
-    Optional<String> getRoleId();
+  Optional<String> getRoleId();
 
-    Optional<String> getOrganizationId();
+  Optional<String> getOrganizationId();
 
-    @Override
-    default User withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default User withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableUser.Builder {
-    }
-
+  class Builder extends ImmutableUser.Builder {}
 }

@@ -25,23 +25,21 @@ import java.util.List;
 @JsonDeserialize(builder = Organization.Builder.class)
 public interface Organization extends WithId<Organization>, WithName, Serializable {
 
-    String KIND = "organization";
+  String KIND = "organization";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    List<Environment> getEnvironments();
+  List<Environment> getEnvironments();
 
-    List<User> getUsers();
+  List<User> getUsers();
 
-    @Override
-    default Organization withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Organization withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableOrganization.Builder {
-    }
-
+  class Builder extends ImmutableOrganization.Builder {}
 }

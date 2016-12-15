@@ -17,8 +17,8 @@ package com.redhat.ipaas.rest.util;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.function.Function;
+import java.util.List;
 
 import org.junit.Test;
 
@@ -30,134 +30,123 @@ import static org.junit.Assert.assertEquals;
  */
 public class ReflectiveSorterTest {
 
-    @Test
-    public void stringSort() {
+  @Test
+  public void stringSort() {
 
-        List<TestPersonInterface> toSort = getTestData();
+    List<TestPersonInterface> toSort = getTestData();
 
-        toSort.sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("lastName", "asc")));
-        String[] expectedNames = {
-            "Feynman",
-            "Heisenberg",
-            "Maxwell",
-            "Schrödinger"
-        };
+    toSort.sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("lastName", "asc")));
+    String[] expectedNames = {"Feynman", "Heisenberg", "Maxwell", "Schrödinger"};
 
-        for (int i = 0; i < expectedNames.length; i++) {
-            assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
-        }
-
-        toSort.sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("lastName", "DESC")));
-        List reversed = Arrays.asList(expectedNames);
-        Collections.reverse(reversed);
-
-        for (int i = 0; i < expectedNames.length; i++) {
-            assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
-        }
+    for (int i = 0; i < expectedNames.length; i++) {
+      assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
     }
 
-    @Test
-    public void intSort() {
-        List<TestPersonInterface> toSort = getTestData();
+    toSort.sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("lastName", "DESC")));
+    List reversed = Arrays.asList(expectedNames);
+    Collections.reverse(reversed);
 
-        toSort.sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("birthYear", null)));
-        String[] expectedNames = {
-            "Maxwell",
-            "Schrödinger",
-            "Heisenberg",
-            "Feynman"
-        };
+    for (int i = 0; i < expectedNames.length; i++) {
+      assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
+    }
+  }
 
-        for (int i = 0; i < expectedNames.length; i++) {
-            assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
-        }
+  @Test
+  public void intSort() {
+    List<TestPersonInterface> toSort = getTestData();
+
+    toSort.sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("birthYear", null)));
+    String[] expectedNames = {"Maxwell", "Schrödinger", "Heisenberg", "Feynman"};
+
+    for (int i = 0; i < expectedNames.length; i++) {
+      assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
+    }
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void invalidType() {
+    getTestData()
+        .sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("blub", "asc")));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void invalidDirection() {
+    getTestData()
+        .sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("lastName", "blub")));
+  }
+
+  @Test
+  public void noParams() {
+    List<TestPersonInterface> toSort = getTestData();
+    Function<List<TestPersonInterface>, List<TestPersonInterface>> operator =
+        new ReflectiveSorter<>(TestPersonInterface.class, getOptions(null, null));
+    operator.apply(toSort);
+
+    String[] expectedNames = {
+      "Schrödinger", "Heisenberg", "Feynman", "Maxwell",
+    };
+
+    for (int i = 0; i < expectedNames.length; i++) {
+      assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
+    }
+  }
+
+  private SortOptions getOptions(String type, String direction) {
+    return new SortOptions() {
+      @Override
+      public String getSortField() {
+        return type;
+      }
+
+      @Override
+      public SortDirection getSortDirection() {
+        return direction != null
+            ? SortDirection.valueOf(direction.toUpperCase())
+            : SortDirection.ASC;
+      }
+    };
+  }
+
+  private List<TestPersonInterface> getTestData() {
+    return Arrays.asList(
+        new TestPerson("Erwin", "Schrödinger", 1887),
+        new TestPerson("Werner", "Heisenberg", 1901),
+        new TestPerson("Richard", "Feynman", 1918),
+        new TestPerson("James Clerk", "Maxwell", 1831));
+  }
+
+  interface TestPersonInterface extends TestPersonBase {
+    String getFirstName();
+
+    int getBirthYear();
+  }
+
+  interface TestPersonBase {
+    String getLastName();
+  }
+
+  static class TestPerson implements TestPersonInterface {
+
+    private String firstName;
+    private String lastName;
+    private int birthYear;
+
+    TestPerson(String firstName, String lastName, int birthYear) {
+      this.firstName = firstName;
+      this.lastName = lastName;
+      this.birthYear = birthYear;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void invalidType() {
-        getTestData().sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("blub", "asc")));
+    public String getFirstName() {
+      return firstName;
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void invalidDirection() {
-        getTestData().sort(new ReflectiveSorter<>(TestPersonInterface.class, getOptions("lastName", "blub")));
+    public String getLastName() {
+      return lastName;
     }
 
-    @Test
-    public void noParams() {
-        List<TestPersonInterface> toSort = getTestData();
-        Function<List<TestPersonInterface>, List<TestPersonInterface>> operator = new ReflectiveSorter<>(TestPersonInterface.class, getOptions(null, null));
-        operator.apply(toSort);
-
-        String[] expectedNames = {
-            "Schrödinger",
-            "Heisenberg",
-            "Feynman",
-            "Maxwell",
-        };
-
-        for (int i = 0; i < expectedNames.length; i++) {
-            assertEquals(toSort.get(i).getLastName(), expectedNames[i]);
-        }
-
+    public int getBirthYear() {
+      return birthYear;
     }
-
-    private SortOptions getOptions(String type, String direction) {
-        return new SortOptions() {
-            @Override
-            public String getSortField() {
-                return type;
-            }
-
-            @Override
-            public SortDirection getSortDirection() {
-                return direction != null ? SortDirection.valueOf(direction.toUpperCase()) : SortDirection.ASC;
-            }
-        };
-    }
-
-    private List<TestPersonInterface> getTestData() {
-        return Arrays.asList(
-
-            new TestPerson( "Erwin", "Schrödinger", 1887),
-            new TestPerson( "Werner", "Heisenberg", 1901),
-            new TestPerson("Richard", "Feynman", 1918),
-            new TestPerson( "James Clerk", "Maxwell", 1831)
-
-                            );
-    }
-
-    interface TestPersonInterface extends TestPersonBase {
-        String getFirstName();
-        int getBirthYear();
-    }
-
-    interface TestPersonBase {
-        String getLastName();
-    }
-
-    static class TestPerson implements TestPersonInterface {
-
-        private String firstName;
-        private String lastName;
-        private int birthYear;
-
-        TestPerson(String firstName, String lastName, int birthYear) {
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.birthYear = birthYear;
-        }
-
-        public String getFirstName() {
-            return firstName;
-        }
-
-        public String getLastName() {
-            return lastName;
-        }
-
-        public int getBirthYear() {
-            return birthYear;
-        }
-    }
+  }
 }

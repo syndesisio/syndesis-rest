@@ -24,21 +24,19 @@ import java.io.Serializable;
 @JsonDeserialize(builder = Permission.Builder.class)
 public interface Permission extends WithId<Permission>, WithName, Serializable {
 
-    String KIND = "permission";
+  String KIND = "permission";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    String getDescription();
+  String getDescription();
 
-    @Override
-    default Permission withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Permission withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutablePermission.Builder {
-    }
-
+  class Builder extends ImmutablePermission.Builder {}
 }

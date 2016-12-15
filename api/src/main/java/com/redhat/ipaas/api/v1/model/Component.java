@@ -25,29 +25,27 @@ import java.util.Optional;
 @JsonDeserialize(builder = Component.Builder.class)
 public interface Component extends WithId<Component>, WithName, Serializable {
 
-    String KIND = "component";
+  String KIND = "component";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    Optional<ComponentGroup> getComponentGroup();
+  Optional<ComponentGroup> getComponentGroup();
 
-    Optional<String> getComponentGroupId();
+  Optional<String> getComponentGroupId();
 
-    String getIcon();
+  String getIcon();
 
-    String getProperties();
+  String getProperties();
 
-    String getDescription();
+  String getDescription();
 
-    @Override
-    default Component withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Component withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableComponent.Builder {
-    }
-
+  class Builder extends ImmutableComponent.Builder {}
 }

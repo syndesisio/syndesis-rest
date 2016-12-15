@@ -26,31 +26,29 @@ import java.util.Optional;
 @JsonDeserialize(builder = Integration.Builder.class)
 public interface Integration extends WithId<Integration>, WithName, Serializable {
 
-    String KIND = "integration";
+  String KIND = "integration";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    Optional<String> getConfiguration();
+  Optional<String> getConfiguration();
 
-    Optional<String> getIntegrationTemplateId();
+  Optional<String> getIntegrationTemplateId();
 
-    Optional<IntegrationTemplate> getIntegrationTemplate();
+  Optional<IntegrationTemplate> getIntegrationTemplate();
 
-    Optional<String> getUserId();
+  Optional<String> getUserId();
 
-    List<User> getUsers();
+  List<User> getUsers();
 
-    List<Tag> getTags();
+  List<Tag> getTags();
 
-    @Override
-    default Integration withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Integration withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableIntegration.Builder {
-    }
-
+  class Builder extends ImmutableIntegration.Builder {}
 }

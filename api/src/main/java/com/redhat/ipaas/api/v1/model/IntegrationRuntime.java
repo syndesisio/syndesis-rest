@@ -24,25 +24,23 @@ import java.io.Serializable;
 @JsonDeserialize(builder = IntegrationRuntime.Builder.class)
 public interface IntegrationRuntime extends WithId<IntegrationRuntime>, Serializable {
 
-    String KIND = "integrationruntime";
+  String KIND = "integrationruntime";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    String getState();
+  String getState();
 
-    Integration getIntegration();
+  Integration getIntegration();
 
-    Environment getEnvironment();
+  Environment getEnvironment();
 
-    @Override
-    default IntegrationRuntime withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default IntegrationRuntime withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableIntegrationRuntime.Builder {
-    }
-
+  class Builder extends ImmutableIntegrationRuntime.Builder {}
 }

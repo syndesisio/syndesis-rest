@@ -25,23 +25,21 @@ import java.util.List;
 @JsonDeserialize(builder = Tag.Builder.class)
 public interface Tag extends WithId<Tag>, WithName, Serializable {
 
-    String KIND = "tag";
+  String KIND = "tag";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    List<IntegrationTemplate> getIntegrationTemplate();
+  List<IntegrationTemplate> getIntegrationTemplate();
 
-    List<Connection> getConnections();
+  List<Connection> getConnections();
 
-    @Override
-    default Tag withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Tag withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableTag.Builder {
-    }
-
+  class Builder extends ImmutableTag.Builder {}
 }

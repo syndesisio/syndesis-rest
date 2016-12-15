@@ -25,21 +25,19 @@ import java.util.List;
 @JsonDeserialize(builder = Role.Builder.class)
 public interface Role extends WithId<Role>, WithName, Serializable {
 
-    String KIND = "role";
+  String KIND = "role";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    List<Permission> getPermissions();
+  List<Permission> getPermissions();
 
-    @Override
-    default Role withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Role withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableRole.Builder {
-    }
-
+  class Builder extends ImmutableRole.Builder {}
 }

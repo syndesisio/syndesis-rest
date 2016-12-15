@@ -34,39 +34,49 @@ import java.util.Collection;
 @Api(value = "integrationpatterns")
 public class IntegrationPatterns {
 
-    @Inject
-    private DataManager dataMgr;
+  @Inject private DataManager dataMgr;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "List integration patterns")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = IntegrationPattern.class)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = "sort", value = "Sort the result list according to the given field value",
-            paramType = "query", dataType = "string"),
-        @ApiImplicitParam(
-            name = "direction", value = "Sorting direction when a 'sort' field is provided. Can be 'asc' " +
-                                        "(ascending) or 'desc' (descending)", paramType = "query", dataType = "string")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List integration patterns")
+  @ApiResponses(
+    value = {@ApiResponse(code = 200, message = "Success", response = IntegrationPattern.class)}
+  )
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+      name = "sort",
+      value = "Sort the result list according to the given field value",
+      paramType = "query",
+      dataType = "string"
+    ),
+    @ApiImplicitParam(
+      name = "direction",
+      value =
+          "Sorting direction when a 'sort' field is provided. Can be 'asc' "
+              + "(ascending) or 'desc' (descending)",
+      paramType = "query",
+      dataType = "string"
+    )
+  })
+  public Collection<IntegrationPattern> list(@Context UriInfo uri) {
+    return dataMgr.fetchAll(
+        IntegrationPattern.KIND,
+        new ReflectiveSorter<>(IntegrationPattern.class, new SortOptionsFromQueryParams(uri)));
+  }
 
-    })
-    public Collection<IntegrationPattern> list(@Context UriInfo uri) {
-        return dataMgr.fetchAll(IntegrationPattern.KIND,
-            new ReflectiveSorter<>(IntegrationPattern.class, new SortOptionsFromQueryParams(uri)));
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Get an integration patten by ID")
+  public IntegrationPattern get(
+      @ApiParam(value = "id of the IntegrationPattern", required = true) @PathParam("id")
+      String id) {
+    IntegrationPattern ip = dataMgr.fetch(IntegrationPattern.KIND, id);
+    if (ip.getIntegrationPatternGroupId().isPresent()) {
+      IntegrationPatternGroup ipg =
+          dataMgr.fetch(IntegrationPatternGroup.KIND, ip.getIntegrationPatternGroupId().get());
+      ip = new IntegrationPattern.Builder().createFrom(ip).integrationPatternGroup(ipg).build();
     }
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Get an integration patten by ID")
-    public IntegrationPattern get(
-        @ApiParam(value = "id of the IntegrationPattern", required = true) @PathParam("id") String id) {
-        IntegrationPattern ip = dataMgr.fetch(IntegrationPattern.KIND, id);
-        if (ip.getIntegrationPatternGroupId().isPresent()) {
-            IntegrationPatternGroup ipg = dataMgr.fetch(IntegrationPatternGroup.KIND, ip.getIntegrationPatternGroupId().get());
-            ip = new IntegrationPattern.Builder().createFrom(ip).integrationPatternGroup(ipg).build();
-        }
-        return ip;
-    }
-
+    return ip;
+  }
 }
