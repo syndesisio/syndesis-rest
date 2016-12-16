@@ -234,5 +234,20 @@
         </plugins>
       </build>
     </profile>
+    <profile>
+      <id>debug</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.wildfly.swarm</groupId>
+            <artifactId>wildfly-swarm-plugin</artifactId>
+            <configuration>
+              <mainClass>com.redhat.ipaas.runtime.Main</mainClass>
+              <debugPort>5005</debugPort>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
