@@ -25,41 +25,42 @@ import org.wildfly.swarm.undertow.WARArchive;
 
 public class Main {
 
-    public static void main(String... args) throws Exception {
-        Swarm swarm = new Swarm();
+  public static void main(String... args) throws Exception {
+    Swarm swarm = new Swarm();
 
-        SwaggerWebAppFraction swaggerFraction = new SwaggerWebAppFraction();
-        swaggerFraction.addWebContent(System.getProperty("swarm.swagger.ui.resources", "com.redhat.ipaas:swagger-ui:" + com.redhat.ipaas.swaggerui.Version.getVersion()));
-        swarm.fraction(swaggerFraction);
+    SwaggerWebAppFraction swaggerFraction = new SwaggerWebAppFraction();
+    swaggerFraction.addWebContent(
+        System.getProperty(
+            "swarm.swagger.ui.resources",
+            "com.redhat.ipaas:swagger-ui:" + com.redhat.ipaas.swaggerui.Version.getVersion()));
+    swarm.fraction(swaggerFraction);
 
-        // Create a SwaggerArchive using ShrinkWrap API
-        SwaggerArchive archive = ShrinkWrap.create(SwaggerArchive.class).
-            setVersion(Version.getVersion()).
-            setContact("ipaas-dev <ipaas-dev@redhat.com>").
-            setDescription("The Red Hat iPaaS REST API "
-                + " connects to back-end services on the IPaaS and provides a single entry point"
-                + " for the IpaaS Console. For console developement it can run in off-line mode"
-                + " where it only serves responses from the response cache.").
-            setLicense("Apache License, Version 2.0").
-            setLicenseUrl("https://www.apache.org/licenses/LICENSE-2.0").
-            setPrettyPrint(true).
-            setTitle("Red Hat iPaaS API").
-            setResourcePackages("com.redhat.ipaas.rest");
-        JAXRSArchive jaxrs = archive.as(JAXRSArchive.class).
-            setContextRoot("v1").
-            addPackages(true, "com.redhat.ipaas.rest").
-            addClass(VersionEndpoint.class).
-            addAllDependencies();
+    // Create a SwaggerArchive using ShrinkWrap API
+    SwaggerArchive archive =
+        ShrinkWrap.create(SwaggerArchive.class)
+            .setVersion(Version.getVersion())
+            .setContact("ipaas-dev <ipaas-dev@redhat.com>")
+            .setDescription(
+                "The Red Hat iPaaS REST API "
+                    + " connects to back-end services on the IPaaS and provides a single entry point"
+                    + " for the IpaaS Console. For console developement it can run in off-line mode"
+                    + " where it only serves responses from the response cache.")
+            .setLicense("Apache License, Version 2.0")
+            .setLicenseUrl("https://www.apache.org/licenses/LICENSE-2.0")
+            .setPrettyPrint(true)
+            .setTitle("Red Hat iPaaS API")
+            .setResourcePackages("com.redhat.ipaas.rest");
+    JAXRSArchive jaxrs =
+        archive
+            .as(JAXRSArchive.class)
+            .setContextRoot("v1")
+            .addPackages(true, "com.redhat.ipaas.rest")
+            .addClass(VersionEndpoint.class)
+            .addAllDependencies();
 
-        WARArchive staticContent = ShrinkWrap.create(WARArchive.class).
-            setDefaultContextRoot().
-            staticContent();
+    WARArchive staticContent =
+        ShrinkWrap.create(WARArchive.class).setDefaultContextRoot().staticContent();
 
-        swarm.
-            start().
-            deploy(staticContent).
-            deploy(jaxrs);
-    }
-
-
+    swarm.start().deploy(staticContent).deploy(jaxrs);
+  }
 }

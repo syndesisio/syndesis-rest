@@ -26,23 +26,26 @@ import com.redhat.ipaas.rest.util.SortOptions;
  */
 class SortOptionsFromQueryParams implements SortOptions {
 
-    private final String sortField;
-    private final SortDirection sortDirection;
+  private final String sortField;
+  private final SortDirection sortDirection;
 
-    SortOptionsFromQueryParams(UriInfo uri) {
-        MultivaluedMap<String, String> queryParams = uri.getQueryParameters();
-        sortField = queryParams.getFirst("sort");
-        String dir = queryParams.getFirst("direction");
-        sortDirection = dir == null ?  SortOptions.SortDirection.ASC : SortOptions.SortDirection.valueOf(dir.toUpperCase());
-    }
+  SortOptionsFromQueryParams(UriInfo uri) {
+    MultivaluedMap<String, String> queryParams = uri.getQueryParameters();
+    sortField = queryParams.getFirst("sort");
+    String dir = queryParams.getFirst("direction");
+    sortDirection =
+        dir == null
+            ? SortOptions.SortDirection.ASC
+            : SortOptions.SortDirection.valueOf(dir.toUpperCase());
+  }
 
-    @Override
-    public String getSortField() {
-        return sortField;
-    }
+  @Override
+  public String getSortField() {
+    return sortField;
+  }
 
-    @Override
-    public SortDirection getSortDirection() {
-        return sortDirection;
-    }
+  @Override
+  public SortDirection getSortDirection() {
+    return sortDirection;
+  }
 }

@@ -17,10 +17,9 @@ package com.redhat.ipaas.api.v1.model;
 
 import java.util.Optional;
 
-public interface WithId<T extends WithId> extends WithKind{
+public interface WithId<T extends WithId> extends WithKind {
 
-    Optional<String> getId();
+  Optional<String> getId();
 
-    T withId(String id);
-
+  T withId(String id);
 }

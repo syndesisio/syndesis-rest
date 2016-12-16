@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface WithKind {
 
-    @JsonIgnore
-    String kind();
-
+  @JsonIgnore
+  String kind();
 }

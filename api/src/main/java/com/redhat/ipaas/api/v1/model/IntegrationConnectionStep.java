@@ -24,31 +24,29 @@ import java.io.Serializable;
 @JsonDeserialize(builder = IntegrationConnectionStep.Builder.class)
 public interface IntegrationConnectionStep extends WithId<IntegrationConnectionStep>, Serializable {
 
-    String KIND = "integrationconnectionstep";
+  String KIND = "integrationconnectionstep";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    Integration getIntegration();
+  Integration getIntegration();
 
-    Connection getConnection();
+  Connection getConnection();
 
-    Step getStep();
+  Step getStep();
 
-    Step getPreviousStep();
+  Step getPreviousStep();
 
-    Step getNextStep();
+  Step getNextStep();
 
-    String getType();
+  String getType();
 
-    @Override
-    default IntegrationConnectionStep withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default IntegrationConnectionStep withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableIntegrationConnectionStep.Builder {
-    }
-
+  class Builder extends ImmutableIntegrationConnectionStep.Builder {}
 }

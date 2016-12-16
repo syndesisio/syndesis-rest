@@ -24,23 +24,21 @@ import java.io.Serializable;
 @JsonDeserialize(builder = Step.Builder.class)
 public interface Step extends WithId<Step>, Serializable {
 
-    String KIND = "step";
+  String KIND = "step";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    IntegrationPattern getIntegrationPattern();
+  IntegrationPattern getIntegrationPattern();
 
-    String getConfiguredProperties();
+  String getConfiguredProperties();
 
-    @Override
-    default Step withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Step withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableStep.Builder {
-    }
-
+  class Builder extends ImmutableStep.Builder {}
 }

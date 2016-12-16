@@ -24,19 +24,17 @@ import java.io.Serializable;
 @JsonDeserialize(builder = EnvironmentType.Builder.class)
 public interface EnvironmentType extends WithId<EnvironmentType>, WithName, Serializable {
 
-    String KIND = "environmenttype";
+  String KIND = "environmenttype";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    @Override
-    default EnvironmentType withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default EnvironmentType withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableEnvironmentType.Builder {
-    }
-
+  class Builder extends ImmutableEnvironmentType.Builder {}
 }

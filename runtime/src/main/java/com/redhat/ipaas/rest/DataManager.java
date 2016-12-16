@@ -59,193 +59,191 @@ import java.util.function.Function;
 @ApplicationScoped
 public class DataManager {
 
-    private static Logger logger = LoggerFactory.getLogger(DataManager.class.getName());
-    @Inject
-    private Cache<String, Map<String, WithId>> cache;
-    private ObjectMapper mapper = ObjectMapperHolder.OBJECT_MAPPER;
-    @Inject
-    @ConfigurationValue("deployment.file")
-    private String fileName;
+  private static Logger logger = LoggerFactory.getLogger(DataManager.class.getName());
+  @Inject private Cache<String, Map<String, WithId>> cache;
+  private ObjectMapper mapper = ObjectMapperHolder.OBJECT_MAPPER;
 
-    public DataManager() {
-    }
+  @Inject
+  @ConfigurationValue("deployment.file")
+  private String fileName;
 
-    DataManager(Cache<String, Map<String, WithId>> cache) {
-        this.cache = cache;
-    }
+  public DataManager() {}
 
-    @PostConstruct
-    public void init() {
-        if (cache.isEmpty()) {
-            ReadApiClientData reader = new ReadApiClientData();
-            try {
-                List<ModelData> mdList = reader.readDataFromFile(fileName);
-                for (ModelData modelData : mdList) {
-                    addToCache(modelData);
-                }
-            } catch (IOException e) {
-                logger.error("Cannot read dummy startup data due to: " + e.getMessage(), e);
-            }
+  DataManager(Cache<String, Map<String, WithId>> cache) {
+    this.cache = cache;
+  }
 
+  @PostConstruct
+  public void init() {
+    if (cache.isEmpty()) {
+      ReadApiClientData reader = new ReadApiClientData();
+      try {
+        List<ModelData> mdList = reader.readDataFromFile(fileName);
+        for (ModelData modelData : mdList) {
+          addToCache(modelData);
         }
+      } catch (IOException e) {
+        logger.error("Cannot read dummy startup data due to: " + e.getMessage(), e);
+      }
     }
+  }
 
-    public void addToCache(ModelData modelData) {
-        try {
-            Class<? extends WithId> clazz = getClass(modelData.getModel());
-            Map<String, WithId> entityMap = cache.computeIfAbsent(modelData.getModel().toLowerCase(), k -> new HashMap<>());
-            logger.debug(modelData.getModel() + ":" + modelData.getData());
-            WithId entity = clazz.cast(mapper.readValue(modelData.getData(), clazz));
-            Optional<String> id = entity.getId();
-            String idVal;
-            if (!id.isPresent()) {
-                idVal = generatePK(entityMap);
-                entity = entity.withId(idVal);
-            } else {
-                idVal = id.get();
-            }
-            entityMap.put(idVal, entity);
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
+  public void addToCache(ModelData modelData) {
+    try {
+      Class<? extends WithId> clazz = getClass(modelData.getModel());
+      Map<String, WithId> entityMap =
+          cache.computeIfAbsent(modelData.getModel().toLowerCase(), k -> new HashMap<>());
+      logger.debug(modelData.getModel() + ":" + modelData.getData());
+      WithId entity = clazz.cast(mapper.readValue(modelData.getData(), clazz));
+      Optional<String> id = entity.getId();
+      String idVal;
+      if (!id.isPresent()) {
+        idVal = generatePK(entityMap);
+        entity = entity.withId(idVal);
+      } else {
+        idVal = id.get();
+      }
+      entityMap.put(idVal, entity);
+    } catch (JsonParseException e) {
+      e.printStackTrace();
+    } catch (JsonMappingException e) {
+      e.printStackTrace();
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
     }
+  }
 
-    /**
-     * Simple generator to mimic behavior in api-client project. When we start
-     * hooking up the back-end systems we may need to query those for the PK
-     *
-     * @param entityMap
-     * @return
-     */
-    public String generatePK(Map<String, WithId> entityMap) {
-        int counter = 1;
-        while (true) {
-            String pk = String.valueOf(entityMap.size() + counter++);
-            if (!entityMap.containsKey(pk)) {
-                return pk;
-            }
-        }
+  /**
+   * Simple generator to mimic behavior in api-client project. When we start
+   * hooking up the back-end systems we may need to query those for the PK
+   *
+   * @param entityMap
+   * @return
+   */
+  public String generatePK(Map<String, WithId> entityMap) {
+    int counter = 1;
+    while (true) {
+      String pk = String.valueOf(entityMap.size() + counter++);
+      if (!entityMap.containsKey(pk)) {
+        return pk;
+      }
     }
+  }
 
-    public Class<? extends WithId> getClass(String model) throws ClassNotFoundException {
-        switch (model.toLowerCase()) {
-            case "component":
-                return Component.class;
-            case "componentgroup":
-                return ComponentGroup.class;
-            case "connection":
-                return Connection.class;
-            case "environment":
-                return Environment.class;
-            case "environmenttype":
-                return EnvironmentType.class;
-            case "integration":
-                return Integration.class;
-            case "integrationconnectionstep":
-                return IntegrationConnectionStep.class;
-            case "integrationpattern":
-                return IntegrationPattern.class;
-            case "integrationpatterngroup":
-                return IntegrationPatternGroup.class;
-            case "integrationruntime":
-                return IntegrationRuntime.class;
-            case "integrationtemplate":
-                return IntegrationTemplate.class;
-            case "integrationtemplateconnectionstep":
-                return IntegrationTemplateConnectionStep.class;
-            case "organization":
-                return Organization.class;
-            case "permission":
-                return Permission.class;
-            case "role":
-                return Role.class;
-            case "step":
-                return Step.class;
-            case "tag":
-                return Tag.class;
-            case "user":
-                return User.class;
-            default:
-                break;
-        }
-        throw new ClassNotFoundException("No class found for model " + model);
+  public Class<? extends WithId> getClass(String model) throws ClassNotFoundException {
+    switch (model.toLowerCase()) {
+      case "component":
+        return Component.class;
+      case "componentgroup":
+        return ComponentGroup.class;
+      case "connection":
+        return Connection.class;
+      case "environment":
+        return Environment.class;
+      case "environmenttype":
+        return EnvironmentType.class;
+      case "integration":
+        return Integration.class;
+      case "integrationconnectionstep":
+        return IntegrationConnectionStep.class;
+      case "integrationpattern":
+        return IntegrationPattern.class;
+      case "integrationpatterngroup":
+        return IntegrationPatternGroup.class;
+      case "integrationruntime":
+        return IntegrationRuntime.class;
+      case "integrationtemplate":
+        return IntegrationTemplate.class;
+      case "integrationtemplateconnectionstep":
+        return IntegrationTemplateConnectionStep.class;
+      case "organization":
+        return Organization.class;
+      case "permission":
+        return Permission.class;
+      case "role":
+        return Role.class;
+      case "step":
+        return Step.class;
+      case "tag":
+        return Tag.class;
+      case "user":
+        return User.class;
+      default:
+        break;
     }
+    throw new ClassNotFoundException("No class found for model " + model);
+  }
 
-    @SuppressWarnings("unchecked")
-    public <T> List<T> fetchAll(String model, Function<List<T>, List<T>>... operators) {
-        Map<String, WithId> entityMap = cache.computeIfAbsent(model, k -> new HashMap<>());
-        List<T> result = new ArrayList<>((Collection<? extends T>) entityMap.values());
-        for (Function<List<T>, List<T>> operator : operators) {
-            result = operator.apply(result);
-        }
-        return result;
+  @SuppressWarnings("unchecked")
+  public <T> List<T> fetchAll(String model, Function<List<T>, List<T>>... operators) {
+    Map<String, WithId> entityMap = cache.computeIfAbsent(model, k -> new HashMap<>());
+    List<T> result = new ArrayList<>((Collection<? extends T>) entityMap.values());
+    for (Function<List<T>, List<T>> operator : operators) {
+      result = operator.apply(result);
     }
+    return result;
+  }
 
-    public <T> T fetch(String model, String id) {
-        Map<String, WithId> entityMap = cache.computeIfAbsent(model, k -> new HashMap<>());
-        if (entityMap.get(id) == null) {
-            return null;
-        }
-        return (T) entityMap.get(id);
+  public <T> T fetch(String model, String id) {
+    Map<String, WithId> entityMap = cache.computeIfAbsent(model, k -> new HashMap<>());
+    if (entityMap.get(id) == null) {
+      return null;
     }
+    return (T) entityMap.get(id);
+  }
 
-    public <T extends WithId> T create(T entity) {
-        String model = entity.kind();
-        Map<String, WithId> entityMap = cache.computeIfAbsent(model, k -> new HashMap<>());
-        Optional<String> id = entity.getId();
-        String idVal;
-        if (!id.isPresent()) {
-            idVal = generatePK(entityMap);
-            entity = (T) entity.withId(idVal);
-        } else {
-            idVal = id.get();
-            if (entityMap.keySet().contains(idVal)) {
-                throw new EntityExistsException("There already exists a "
-                    + model + " with id " + idVal);
-            }
-        }
-        entityMap.put(idVal, entity);
-        //TODO interact with the back-end system
-        return entity;
+  public <T extends WithId> T create(T entity) {
+    String model = entity.kind();
+    Map<String, WithId> entityMap = cache.computeIfAbsent(model, k -> new HashMap<>());
+    Optional<String> id = entity.getId();
+    String idVal;
+    if (!id.isPresent()) {
+      idVal = generatePK(entityMap);
+      entity = (T) entity.withId(idVal);
+    } else {
+      idVal = id.get();
+      if (entityMap.keySet().contains(idVal)) {
+        throw new EntityExistsException("There already exists a " + model + " with id " + idVal);
+      }
     }
+    entityMap.put(idVal, entity);
+    //TODO interact with the back-end system
+    return entity;
+  }
 
-    public void update(WithId entity) {
-        String model = entity.kind();
-        Map<String, WithId> entityMap = cache.get(model);
-        Optional<String> id = entity.getId();
-        if (!id.isPresent()) {
-            throw new EntityNotFoundException("Setting the id on the entity is required for updates");
-        }
-        String idVal = id.get();
-        if (entityMap == null || !entityMap.containsKey(idVal)) {
-            throw new EntityNotFoundException("Can not find " + model + " with id " + idVal);
-        }
-        //TODO 1. properly merge the data ? + add data validation in the REST Resource
-        //TODO 2. interact with the back-end system
-        entityMap.put(idVal, entity);
+  public void update(WithId entity) {
+    String model = entity.kind();
+    Map<String, WithId> entityMap = cache.get(model);
+    Optional<String> id = entity.getId();
+    if (!id.isPresent()) {
+      throw new EntityNotFoundException("Setting the id on the entity is required for updates");
     }
+    String idVal = id.get();
+    if (entityMap == null || !entityMap.containsKey(idVal)) {
+      throw new EntityNotFoundException("Can not find " + model + " with id " + idVal);
+    }
+    //TODO 1. properly merge the data ? + add data validation in the REST Resource
+    //TODO 2. interact with the back-end system
+    entityMap.put(idVal, entity);
+  }
 
-    public void delete(String model, String id) {
-        Map<String, WithId> entityMap = cache.get(model);
-        if (id == null || id.equals(""))
-            throw new EntityNotFoundException("Setting the id on the entity is required for updates");
-        if (entityMap == null || !entityMap.containsKey(id))
-            throw new EntityNotFoundException("Can not find " + model + " with id " + id);
-        //TODO interact with the back-end system
-        entityMap.remove(id);
-    }
+  public void delete(String model, String id) {
+    Map<String, WithId> entityMap = cache.get(model);
+    if (id == null || id.equals(""))
+      throw new EntityNotFoundException("Setting the id on the entity is required for updates");
+    if (entityMap == null || !entityMap.containsKey(id))
+      throw new EntityNotFoundException("Can not find " + model + " with id " + id);
+    //TODO interact with the back-end system
+    entityMap.remove(id);
+  }
 
-    public String getFileName() {
-        return fileName;
-    }
+  public String getFileName() {
+    return fileName;
+  }
 
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
+  public void setFileName(String fileName) {
+    this.fileName = fileName;
+  }
 }

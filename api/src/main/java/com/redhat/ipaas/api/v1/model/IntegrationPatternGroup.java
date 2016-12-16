@@ -22,21 +22,20 @@ import java.io.Serializable;
 
 @Value.Immutable
 @JsonDeserialize(builder = IntegrationPatternGroup.Builder.class)
-public interface IntegrationPatternGroup extends WithId<IntegrationPatternGroup>, WithName, Serializable {
+public interface IntegrationPatternGroup
+    extends WithId<IntegrationPatternGroup>, WithName, Serializable {
 
-    String KIND = "integrationpatterngroup";
+  String KIND = "integrationpatterngroup";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    @Override
-    default IntegrationPatternGroup withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default IntegrationPatternGroup withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableIntegrationPatternGroup.Builder {
-    }
-
+  class Builder extends ImmutableIntegrationPatternGroup.Builder {}
 }

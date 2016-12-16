@@ -28,15 +28,16 @@ import javax.ws.rs.ext.Provider;
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 public class JacksonContextResolver implements ContextResolver<ObjectMapper> {
-    private ObjectMapper objectMapper;
+  private ObjectMapper objectMapper;
 
-    public JacksonContextResolver() throws Exception {
-        this.objectMapper = new ObjectMapper().
-            registerModule(new Jdk8Module()).
-            setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-    }
+  public JacksonContextResolver() throws Exception {
+    this.objectMapper =
+        new ObjectMapper()
+            .registerModule(new Jdk8Module())
+            .setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
+  }
 
-    public ObjectMapper getContext(Class<?> objectType) {
-        return objectMapper;
-    }
+  public ObjectMapper getContext(Class<?> objectType) {
+    return objectMapper;
+  }
 }

@@ -37,64 +37,73 @@ import java.util.Collection;
 @Api(value = "integrationtemplates")
 public class IntegrationTemplates {
 
-    @Inject
-    private DataManager dataMgr;
+  @Inject private DataManager dataMgr;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "List integration templates")
-    @ApiResponses(value = {@ApiResponse(code = 200, message = "Success", response = IntegrationTemplate.class)})
-    @ApiImplicitParams({
-        @ApiImplicitParam(
-            name = "sort", value = "Sort the result list according to the given field value",
-            paramType = "query", dataType = "string"),
-        @ApiImplicitParam(
-            name = "direction", value = "Sorting direction when a 'sort' field is provided. Can be 'asc' " +
-                                        "(ascending) or 'desc' (descending)", paramType = "query", dataType = "string")
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @ApiOperation(value = "List integration templates")
+  @ApiResponses(
+    value = {@ApiResponse(code = 200, message = "Success", response = IntegrationTemplate.class)}
+  )
+  @ApiImplicitParams({
+    @ApiImplicitParam(
+      name = "sort",
+      value = "Sort the result list according to the given field value",
+      paramType = "query",
+      dataType = "string"
+    ),
+    @ApiImplicitParam(
+      name = "direction",
+      value =
+          "Sorting direction when a 'sort' field is provided. Can be 'asc' "
+              + "(ascending) or 'desc' (descending)",
+      paramType = "query",
+      dataType = "string"
+    )
+  })
+  public Collection<IntegrationTemplate> list(@Context UriInfo uri) {
+    return dataMgr.fetchAll(
+        IntegrationTemplate.KIND,
+        new ReflectiveSorter<>(IntegrationTemplate.class, new SortOptionsFromQueryParams(uri)));
+  }
 
-    })
-    public Collection<IntegrationTemplate> list(@Context UriInfo uri) {
-        return dataMgr.fetchAll(IntegrationTemplate.KIND,
-            new ReflectiveSorter<>(IntegrationTemplate.class, new SortOptionsFromQueryParams(uri)));
-    }
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Get an integration template by ID")
+  public IntegrationTemplate get(
+      @ApiParam(value = "id of the IntegrationTemplate", required = true) @PathParam("id")
+      String id) {
+    IntegrationTemplate it = dataMgr.fetch(IntegrationTemplate.KIND, id);
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Get an integration template by ID")
-    public IntegrationTemplate get(
-        @ApiParam(value = "id of the IntegrationTemplate", required = true) @PathParam("id") String id) {
-        IntegrationTemplate it = dataMgr.fetch(IntegrationTemplate.KIND, id);
+    return it;
+  }
 
-        return it;
-    }
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Consumes("application/json")
+  @ApiOperation(value = "Create an integration template")
+  public IntegrationTemplate create(IntegrationTemplate integrationTemplate) {
+    return dataMgr.create(integrationTemplate);
+  }
 
-    @POST
-    @Produces(MediaType.APPLICATION_JSON)
-    @Consumes("application/json")
-    @ApiOperation(value = "Create an integration template")
-    public IntegrationTemplate create(IntegrationTemplate integrationTemplate) {
-        return dataMgr.create(integrationTemplate);
-    }
+  @PUT
+  @Path(value = "/{id}")
+  @Consumes("application/json")
+  @ApiOperation(value = "Update a connection")
+  public void update(
+      @ApiParam(value = "id of the connection", required = true) @PathParam("id") String id,
+      IntegrationTemplate integrationTemplate) {
+    dataMgr.update(integrationTemplate);
+  }
 
-    @PUT
-    @Path(value = "/{id}")
-    @Consumes("application/json")
-    @ApiOperation(value = "Update a connection")
-    public void update(
-        @ApiParam(value = "id of the connection", required = true) @PathParam("id") String id,
-        IntegrationTemplate integrationTemplate) {
-        dataMgr.update(integrationTemplate);
-
-    }
-
-    @DELETE
-    @Produces(MediaType.APPLICATION_JSON)
-    @Path(value = "/{id}")
-    @ApiOperation(value = "Delete an integration template")
-    public void delete(
-        @ApiParam(value = "id of the IntegrationTemplate", required = true) @PathParam("id") String id) {
-        dataMgr.delete(IntegrationTemplate.KIND, id);
-    }
-
+  @DELETE
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path(value = "/{id}")
+  @ApiOperation(value = "Delete an integration template")
+  public void delete(
+      @ApiParam(value = "id of the IntegrationTemplate", required = true) @PathParam("id")
+      String id) {
+    dataMgr.delete(IntegrationTemplate.KIND, id);
+  }
 }

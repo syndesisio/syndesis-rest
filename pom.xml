@@ -131,6 +131,7 @@
     <templating.maven.plugin.version>1.0.0</templating.maven.plugin.version>
     <maven.jacoco.plugin.version>0.7.8</maven.jacoco.plugin.version>
     <maven.license.plugin.version>3.0</maven.license.plugin.version>
+    <maven.google.formatter.plugin.version>1.0.6</maven.google.formatter.plugin.version>
 
     <fabric8.maven.plugin.version>3.2.8</fabric8.maven.plugin.version>
   </properties>
@@ -270,6 +271,20 @@
             <exclude>**/*.adoc</exclude>
           </excludes>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.theoryinpractise</groupId>
+        <artifactId>googleformatter-maven-plugin</artifactId>
+        <version>${maven.google.formatter.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>reformat-sources</id>
+            <goals>
+              <goal>format</goal>
+            </goals>
+            <phase>process-sources</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>

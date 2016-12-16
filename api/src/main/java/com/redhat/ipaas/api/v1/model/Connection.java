@@ -30,39 +30,37 @@ import java.util.Optional;
 @JsonDeserialize(builder = Connection.Builder.class)
 public interface Connection extends WithId<Connection>, WithName, Serializable {
 
-    String KIND = "connection";
+  String KIND = "connection";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    Optional<Organization> getOrganization();
+  Optional<Organization> getOrganization();
 
-    Optional<String> getOrganizationId();
+  Optional<String> getOrganizationId();
 
-    Optional<Component> getComponent();
+  Optional<Component> getComponent();
 
-    Optional<String> getComponentId();
+  Optional<String> getComponentId();
 
-    String getConfiguredProperties();
+  String getConfiguredProperties();
 
-    String getIcon();
+  String getIcon();
 
-    String getDescription();
+  String getDescription();
 
-    String getPosition();
+  String getPosition();
 
-    List<Tag> getTags();
+  List<Tag> getTags();
 
-    Optional<String> getUserId();
+  Optional<String> getUserId();
 
-    @Override
-    default Connection withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default Connection withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableConnection.Builder {
-    }
-
+  class Builder extends ImmutableConnection.Builder {}
 }

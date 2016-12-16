@@ -27,45 +27,44 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-
 public class ReadApiClientDataTest {
 
-    private final static ObjectMapper mapper = getObjectMapper();
+  private final static ObjectMapper mapper = getObjectMapper();
 
-	private static ObjectMapper getObjectMapper() {
-	    ObjectMapper objectMapper = new ObjectMapper();
-	    objectMapper.registerModule(new Jdk8Module());
-	    return objectMapper;
+  private static ObjectMapper getObjectMapper() {
+    ObjectMapper objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new Jdk8Module());
+    return objectMapper;
+  }
+
+  @Test
+  public void deserializeModelDataTest() throws IOException {
+
+    //serialize
+    ComponentGroup cg = new ComponentGroup.Builder().id("label").name("label").build();
+    ModelData mdIn = new ModelData(ComponentGroup.KIND, mapper.writeValueAsString(cg));
+    assertEquals("{\"id\":\"label\",\"name\":\"label\"}", mdIn.getData());
+
+    //deserialize
+    String json = mapper.writeValueAsString(mdIn);
+    ModelData mdOut = mapper.readValue(json, ModelData.class);
+    assertEquals("{\"id\":\"label\",\"name\":\"label\"}", mdOut.getData());
+  }
+
+  @Test
+  public void loadApiClientDataTest() throws IOException {
+    List<ModelData> modelDataList =
+        new ReadApiClientData().readDataFromFile("com/redhat/ipaas/rest/deployment.json");
+    System.out.println("Found " + modelDataList.size() + " entities.");
+    assertTrue("We should find some ModelData", 0 < modelDataList.size());
+    List<ComponentGroup> componentGroupList = new ArrayList<ComponentGroup>();
+    for (ModelData md : modelDataList) {
+      if (md.getModel().equalsIgnoreCase("componentgroup")) {
+        ComponentGroup cg = mapper.readValue(md.getData(), ComponentGroup.class);
+        componentGroupList.add(cg);
+      }
     }
-
-	@Test
-	public void deserializeModelDataTest() throws IOException {
-
-		//serialize
-		ComponentGroup cg = new ComponentGroup.Builder().id("label").name("label").build();
-		ModelData mdIn = new ModelData(ComponentGroup.KIND,  mapper.writeValueAsString(cg));
-		assertEquals("{\"id\":\"label\",\"name\":\"label\"}", mdIn.getData());
-
-		//deserialize
-		String json = mapper.writeValueAsString(mdIn);
-		ModelData mdOut = mapper.readValue(json, ModelData.class);
-		assertEquals("{\"id\":\"label\",\"name\":\"label\"}", mdOut.getData());
-	}
-
-	@Test
-	public void loadApiClientDataTest() throws IOException {
-		List<ModelData> modelDataList = new ReadApiClientData().readDataFromFile("com/redhat/ipaas/rest/deployment.json");
-		System.out.println("Found " + modelDataList.size() + " entities.");
-		assertTrue("We should find some ModelData", 0 < modelDataList.size());
-		List<ComponentGroup> componentGroupList = new ArrayList<ComponentGroup>();
-		for (ModelData md : modelDataList) {
-			if (md.getModel().equalsIgnoreCase("componentgroup")) {
-				ComponentGroup cg = mapper.readValue(md.getData(), ComponentGroup.class);
-				componentGroupList.add(cg);
-			}
-		}
-		System.out.println("Found " + componentGroupList.size() + " ComponentGroups");
-		assertTrue("We should find some ComponentGroups", 0 < componentGroupList.size());
-	}
-
+    System.out.println("Found " + componentGroupList.size() + " ComponentGroups");
+    assertTrue("We should find some ComponentGroups", 0 < componentGroupList.size());
+  }
 }

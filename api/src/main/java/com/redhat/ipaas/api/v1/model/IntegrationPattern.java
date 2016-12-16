@@ -25,27 +25,25 @@ import java.util.Optional;
 @JsonDeserialize(builder = IntegrationPattern.Builder.class)
 public interface IntegrationPattern extends WithId<IntegrationPattern>, WithName, Serializable {
 
-    String KIND = "integrationpattern";
+  String KIND = "integrationpattern";
 
-    @Override
-    default String kind() {
-        return KIND;
-    }
+  @Override
+  default String kind() {
+    return KIND;
+  }
 
-    String getIcon();
+  String getIcon();
 
-    String getProperties();
+  String getProperties();
 
-    Optional<IntegrationPatternGroup> getIntegrationPatternGroup();
+  Optional<IntegrationPatternGroup> getIntegrationPatternGroup();
 
-    Optional<String> getIntegrationPatternGroupId();
+  Optional<String> getIntegrationPatternGroupId();
 
-    @Override
-    default IntegrationPattern withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
+  @Override
+  default IntegrationPattern withId(String id) {
+    return new Builder().createFrom(this).id(id).build();
+  }
 
-    class Builder extends ImmutableIntegrationPattern.Builder {
-    }
-
+  class Builder extends ImmutableIntegrationPattern.Builder {}
 }
