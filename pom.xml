@@ -115,7 +115,7 @@
     <wildfly.swarm.version>2016.11.0</wildfly.swarm.version>
     <version.infinispan>9.0.0.Alpha4</version.infinispan>
     <immuutables.version>2.3.10</immuutables.version>
-    <swagger.annotations.version>1.5.5</swagger.annotations.version>
+    <swagger.annotations.version>1.5.10</swagger.annotations.version>
     <jackson.version>2.7.8</jackson.version>
     <slf4j.api.version>1.7.10</slf4j.api.version>
     <junit.version>4.12</junit.version>
