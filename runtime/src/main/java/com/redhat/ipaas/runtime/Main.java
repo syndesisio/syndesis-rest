@@ -15,7 +15,6 @@
  */
 package com.redhat.ipaas.runtime;
 
-import com.redhat.ipaas.rest.VersionEndpoint;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.wildfly.swarm.Swarm;
 import org.wildfly.swarm.jaxrs.JAXRSArchive;
@@ -44,11 +43,9 @@ public class Main {
             setLicenseUrl("https://www.apache.org/licenses/LICENSE-2.0").
             setPrettyPrint(true).
             setTitle("Red Hat iPaaS API").
-            setResourcePackages("com.redhat.ipaas.rest");
+            setResourcePackages("com.redhat.ipaas.api.v1.rest");
         JAXRSArchive jaxrs = archive.as(JAXRSArchive.class).
             setContextRoot("v1").
-            addPackages(true, "com.redhat.ipaas.rest").
-            addClass(VersionEndpoint.class).
             addAllDependencies();
 
         WARArchive staticContent = ShrinkWrap.create(WARArchive.class).
@@ -60,6 +57,5 @@ public class Main {
             deploy(staticContent).
             deploy(jaxrs);
     }
-
 
 }

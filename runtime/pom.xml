@@ -70,7 +70,7 @@
           <apiSources>
             <apiSource>
               <locations>
-                <location>com.redhat.ipaas.rest</location>
+                <location>com.redhat.ipaas.api.v1.rest</location>
               </locations>
               <swaggerDirectory>${apidocs.output.dir}</swaggerDirectory>
               <schemes>
@@ -216,11 +216,6 @@
       <groupId>org.wildfly.swarm</groupId>
       <artifactId>arquillian</artifactId>
       <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <version>1.7.10</version>
     </dependency>
   </dependencies>
 
