@@ -60,26 +60,39 @@ import java.util.function.Function;
 public class DataManager {
 
     private static Logger logger = LoggerFactory.getLogger(DataManager.class.getName());
-    @Inject
-    private Cache<String, Map<String, WithId>> cache;
+
     private ObjectMapper mapper = ObjectMapperHolder.OBJECT_MAPPER;
+
+    // Inject optional data file by field injection.
     @Inject
     @ConfigurationValue("deployment.file")
-    private String fileName;
+    private String dataFileName;
 
+    private Cache<String, Map<String, WithId>> cache;
+
+    // This is needed by CDI to create a proxy, but the actual instance created will use the constructor below which
+    // has properly configured constructor injection.
     public DataManager() {
     }
 
-    DataManager(Cache<String, Map<String, WithId>> cache) {
+    // Constructor to help with testing.
+    public DataManager(String dataFileName, Cache<String, Map<String, WithId>> cache) {
+        this(cache);
+        this.dataFileName = dataFileName;
+    }
+
+    // Inject mandatory via constructor injection.
+    @Inject
+    public DataManager(Cache<String, Map<String, WithId>> cache) {
         this.cache = cache;
     }
 
     @PostConstruct
     public void init() {
-        if (cache.isEmpty()) {
+        if (cache.isEmpty() && dataFileName != null) {
             ReadApiClientData reader = new ReadApiClientData();
             try {
-                List<ModelData> mdList = reader.readDataFromFile(fileName);
+                List<ModelData> mdList = reader.readDataFromFile(dataFileName);
                 for (ModelData modelData : mdList) {
                     addToCache(modelData);
                 }
@@ -241,11 +254,4 @@ public class DataManager {
         entityMap.remove(id);
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
-    }
 }
