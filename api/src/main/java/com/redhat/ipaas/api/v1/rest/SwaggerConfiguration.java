@@ -15,25 +15,17 @@
  */
 package com.redhat.ipaas.api.v1.rest;
 
-import com.redhat.ipaas.api.AllowedOrigins;
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.ws.rs.Path;
-
 @Configuration
 public class SwaggerConfiguration {
 
-    @AllowedOrigins("*")
-    @Path("/swagger.{type:json|yaml}")
-    public static class IPaasApiListingResource extends ApiListingResource {
-    }
-
     @Bean
-    public IPaasApiListingResource apiListingResource() {
-        return new IPaasApiListingResource();
+    public ApiListingResource apiListingResource() {
+        return new ApiListingResource();
     }
 
     @Bean
