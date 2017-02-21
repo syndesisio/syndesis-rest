@@ -21,6 +21,7 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Path;
 
 @Configuration
@@ -29,6 +30,9 @@ public class SwaggerConfiguration {
     @AllowedOrigins("*")
     @Path("/swagger.{type:json|yaml}")
     public static class IPaasApiListingResource extends ApiListingResource {
+
+        @OPTIONS
+        public void options() {}
     }
 
     @Bean

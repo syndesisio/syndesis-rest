@@ -15,49 +15,64 @@
  */
 package com.redhat.ipaas.runtime;
 
-import org.jboss.resteasy.plugins.interceptors.CorsFilter;
 import org.jboss.resteasy.spi.CorsHeaders;
+import org.jboss.resteasy.spi.DefaultOptionsMethodException;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
-import javax.ws.rs.container.*;
-import javax.ws.rs.core.Feature;
-import javax.ws.rs.core.FeatureContext;
+import javax.ws.rs.core.*;
+import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
-import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 @Service
+@EnableConfigurationProperties
+@ConfigurationProperties("cors")
 @Provider
 public class CorsOptionsFeature implements Feature {
+    private List<String> allowedOrigins = Arrays.asList("*");
 
-    @PreMatching
-    public static class CORSOptionsFilter extends CorsFilter {
+    public List<String> getAllowedOrigins() {
+        return allowedOrigins;
+    }
 
-        CORSOptionsFilter() {
-            getAllowedOrigins().addAll(Arrays.asList("*"));
-        }
+    public void setAllowedOrigins(List<String> allowedOrigins) {
+        this.allowedOrigins = allowedOrigins;
+    }
+
+    public class DefaultOptionsExceptionMapper implements ExceptionMapper<DefaultOptionsMethodException> {
+
+        @Context HttpHeaders httpHeaders;
 
         @Override
-        public void filter(ContainerRequestContext requestContext) throws IOException {
-            String origin = requestContext.getHeaderString(CorsHeaders.ORIGIN);
-            if (origin == null)
-            {
-                return;
-            }
-            if (requestContext.getMethod().equalsIgnoreCase("OPTIONS"))
-            {
-                preflight(origin, requestContext);
-            }
-        }
+        public Response toResponse(DefaultOptionsMethodException exception) {
 
-        // We don't want to do response filtering...
-        public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+            String origin = httpHeaders.getHeaderString(CorsHeaders.ORIGIN);
+            if (!allowedOrigins.contains("*") && !allowedOrigins.contains(origin)) {
+                return exception.getResponse();
+            }
+
+            final Response.ResponseBuilder response = Response.fromResponse(exception.getResponse());
+            if( origin!=null )
+                response.header(CorsHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+
+            String requestHeaders = httpHeaders.getHeaderString(CorsHeaders.ACCESS_CONTROL_REQUEST_HEADERS);
+            if (requestHeaders != null)
+                response.header(CorsHeaders.ACCESS_CONTROL_ALLOW_HEADERS, requestHeaders);
+
+            String requestMethods = httpHeaders.getHeaderString(CorsHeaders.ACCESS_CONTROL_REQUEST_METHOD);
+            if (requestMethods != null)
+                response.header(CorsHeaders.ACCESS_CONTROL_ALLOW_METHODS, requestMethods);
+
+            return response.build();
         }
     }
 
     @Override
     public boolean configure(FeatureContext context) {
-        context.register(new CORSOptionsFilter());
+        context.register(new DefaultOptionsExceptionMapper());
         return true;
     }
 }
