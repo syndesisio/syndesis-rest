@@ -8,7 +8,7 @@ def version = "1.0-${versionSuffix}"
 openshiftTemplate {
     mavenNode(mavenImage: "maven:${mavenVersion}") {
 
-        state 'Build'
+        stage 'Build'
         container(name: 'maven') {
             pom = readMavenPom(file: 'pom.xml')
             version = pom.version.replaceAll("SNAPSHOT", "versionSuffix")
@@ -16,10 +16,10 @@ openshiftTemplate {
             sh "mvn clean install"
         }
 
-        state 'System Tests'
+        stage 'System Tests'
         runSystemTests(component: 'ipaas-rest', version: "${version}")
 
-        state 'Deploy'
+        stage 'Deploy'
         updateComponent(component: 'ipaas-rest', version: "${version}", namespace: 'ipaas-staging')
     }
 }
