@@ -1,7 +1,7 @@
 @Library('github.com/redhat-ipaas/ipaas-pipeline-library@master')
 def mavenVersion='3.3.9'
 
-def date = new SimpleDateFormat("yyyyMMddHHmm").format(new Date())
+def date = new java.text.SimpleDateFormat("yyyyMMddHHmm").format(new Date())
 def versionSuffix = "${date}-${env.BUILD_NUMBER}"
 def version = "1.0-${versionSuffix}"
 
