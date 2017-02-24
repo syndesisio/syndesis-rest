@@ -19,10 +19,18 @@ machine:
   - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
   services:
   - docker
+  environment:
+    PATH: ${HOME}/bin:${PATH}
 
 dependencies:
   override:
   - ./mvnw -Pfabric8 -Dfabric8.skip -DskipTests package dependency:go-offline
+  - curl -sL https://github.com/jpm4j/jpm4j.installers/raw/master/dist/biz.aQute.jpm.run.jar >jpm4j.jar
+  - java -jar jpm4j.jar -u -B ${HOME}/bin init
+  - jpm install com.codacy:codacy-coverage-reporter:assembly
+  cache_directories:
+  - ${HOME}/jpm
+  - ${HOME}/bin
 test:
   override:
   - ./mvnw -Pfabric8 install
@@ -32,7 +40,7 @@ test:
   - cp runtime/target/classes/static/index.html $CIRCLE_ARTIFACTS/apidocs.html
   - cp runtime/target/classes/static/swagger.json $CIRCLE_ARTIFACTS/
   - cp runtime/target/classes/static/swagger.yaml $CIRCLE_ARTIFACTS/
-  - bash <(curl -s https://codecov.io/bash)
+  - codacy-coverage-reporter -l Java -r code-reports/target/site/jacoco-aggregate/jacoco.xml
 
 deployment:
   staging:
