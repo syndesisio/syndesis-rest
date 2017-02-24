@@ -188,6 +188,7 @@
     <module>project-generator</module>
     <module>connector-catalog</module>
     <module>openshift</module>
+    <module>verifier</module>
   </modules>
 
   <dependencyManagement>
@@ -287,6 +288,12 @@
       <dependency>
         <groupId>com.redhat.ipaas</groupId>
         <artifactId>runtime</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>com.redhat.ipaas</groupId>
+        <artifactId>verifier</artifactId>
         <version>${project.version}</version>
       </dependency>
 
