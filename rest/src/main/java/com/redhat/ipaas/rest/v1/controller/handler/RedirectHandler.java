@@ -36,12 +36,12 @@ public class RedirectHandler {
     @Path("{target:.*}")
     @GET
     public Response get(@Context HttpServletRequest request, @PathParam("target") String path) throws URISyntaxException {
+        String uri = path;
         String queryString = request.getQueryString();
-        if( queryString!=null ) {
-            path += "?"+queryString;
+        if (queryString != null) {
+            uri += "?" + queryString;
         }
-        URI uri = new URI(path);
-        return Response.seeOther(uri).build();
+        return Response.seeOther(new URI(uri)).build();
     }
 
 }
