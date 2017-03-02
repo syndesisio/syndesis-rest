@@ -102,8 +102,8 @@ public class DataManagerTest {
         ConfigMap configMap1 = new ConfigMapBuilder()
             .withNewMetadata()
             .withName("integration1")
-            .addToLabels(Integration.LABEL_ID, "id1")
-            .addToLabels(Integration.LABEL_NAME, "integration one")
+            .addToLabels(Integration.Label.ID.value(), "id1")
+            .addToLabels(Integration.Label.NAME.value(), "integration one")
             .endMetadata()
             .addToData(IntegrationDAO.CONFIGURATION_KEY, "someconfig")
             .build();
@@ -125,8 +125,8 @@ public class DataManagerTest {
         ConfigMap configMap2 = new ConfigMapBuilder()
             .withNewMetadata()
             .withName("integration2")
-            .addToLabels(Integration.LABEL_ID, "id2")
-            .addToLabels(Integration.LABEL_NAME, "integration two")
+            .addToLabels(Integration.Label.ID.value(), "id2")
+            .addToLabels(Integration.Label.NAME.value(), "integration two")
             .endMetadata()
             .addToData(IntegrationDAO.CONFIGURATION_KEY, "someconfig")
             .build();

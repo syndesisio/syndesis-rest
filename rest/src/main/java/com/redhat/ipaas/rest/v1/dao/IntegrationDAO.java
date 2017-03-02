@@ -57,7 +57,7 @@ public class IntegrationDAO implements DataAccessObject<Integration> {
 
     @Override
     public ListResult<Integration> fetchAll() {
-        ConfigMapList list = kubernetesClient.configMaps().withLabel(Integration.LABEL_NAME).list();
+        ConfigMapList list = kubernetesClient.configMaps().withLabel(Integration.Label.NAME.value()).list();
         List<ConfigMap> maps = list != null ? list.getItems() : Collections.emptyList();
         List<Integration> integrations = maps.stream().map(c -> toIntegration(c)).collect(Collectors.toList());
         return new ListResult.Builder<Integration>()
@@ -97,11 +97,12 @@ public class IntegrationDAO implements DataAccessObject<Integration> {
         return kubernetesClient.configMaps().withName(id).delete();
     }
 
-    private static final boolean containsIntegration(ConfigMap configMap) {
-        return configMap != null && configMap.getMetadata().getLabels().containsKey(Integration.LABEL_NAME);
+    private static boolean containsIntegration(ConfigMap configMap) {
+        return configMap != null &&
+               configMap.getMetadata().getLabels().containsKey(Integration.Label.NAME.value());
     }
 
-    private static final Integration toIntegration(ConfigMap configMap) {
+    private static Integration toIntegration(ConfigMap configMap) {
         if (configMap == null) {
             throw new IllegalArgumentException("ConfigMap cannot be null.");
         }
@@ -112,20 +113,29 @@ public class IntegrationDAO implements DataAccessObject<Integration> {
             throw new IllegalArgumentException("ConfigMap name cannot be blank.");
         }
         if (!containsIntegration(configMap)) {
-            throw new IllegalArgumentException("ConfigMap with name: [" + configMap.getMetadata().getName() + "] does not contain an Integration.");
+            throw new IllegalArgumentException("ConfigMap [" + configMap.getMetadata().getName() + "] does not contain an Integration.");
         }
 
         String id = configMap.getMetadata().getName();
-        String name = configMap.getMetadata().getLabels().get(Integration.LABEL_NAME);
-        String templateId = configMap.getMetadata().getLabels().get(Integration.LABEL_TEMPLATE_ID);
+        String name = getLabel(configMap, Integration.Label.NAME);
+        String templateId = getLabel(configMap, Integration.Label.TEMPLATE);
         Map<String, String> data = configMap.getData();
-        String configuration = data != null ? data.get(CONFIGURATION_KEY) : null;
-
+        if (data == null) {
+            throw new IllegalStateException("ConfigMap [" + id + "] must not be empty.");
+        }
+        String configuration = data.get(CONFIGURATION_KEY);
+        if (configuration == null) {
+            throw new IllegalStateException("ConfigMap [" + id + "] must contain an entry " + CONFIGURATION_KEY + ".");
+        }
         return new Integration.Builder().name(name)
             .id(Optional.of(id))
             .integrationTemplateId(Optional.ofNullable(templateId))
             .configuration(configuration)
             .build();
+    }
+
+    private static String getLabel(ConfigMap configMap, Integration.Label label) {
+        return configMap.getMetadata().getLabels().get(label.value());
     }
 
     private static final ConfigMap toConfigMap(Integration integration) {
@@ -137,11 +147,11 @@ public class IntegrationDAO implements DataAccessObject<Integration> {
         ConfigMapBuilder builder = new ConfigMapBuilder()
             .withNewMetadata()
                 .withName(id)
-                .addToLabels(Integration.LABEL_ID, id)
-                .addToLabels(Integration.LABEL_NAME, name)
+                .addToLabels(Integration.Label.ID.value(), id)
+                .addToLabels(Integration.Label.NAME.value(), name)
             .endMetadata();
         if (templateId != null) {
-            builder.editMetadata().addToLabels(Integration.LABEL_TEMPLATE_ID, templateId);
+            builder.editMetadata().addToLabels(Integration.Label.TEMPLATE.value(), templateId);
         }
 
         if (configuration != null) {

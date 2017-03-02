@@ -31,20 +31,23 @@ public interface Integration extends WithId<Integration>, WithName, Serializable
 
     String KIND = "integration";
 
-    /**
-     *Required Labels
-     */
-    String LABEL_NAME = "ipaas.redhat.com/integration-name";
+    // Labels used in config-map used for holding integrations
+    enum Label {
+        NAME("ipaas.redhat.com/integration/name",true),
+        ID("ipaas.redhat.com/integration/id",false),
+        TEMPLATE("ipaas.redhat.com/integration/template",false);
 
-    /**
-     * Optional Labels
-     */
+        private final boolean required;
+        private final String label;
 
-    //The integration id
-    String LABEL_ID = "ipaas.redhat.com/integration-id";
+        Label(String label, boolean required) {
+            this.label = label;
+            this.required = required;
+        }
 
-    //The integration template id
-    String LABEL_TEMPLATE_ID = "ipaas.redhat.com/template-id";
+        public String value() { return label; }
+        public boolean isRequired() { return required; }
+    }
 
     @Override
     default String getKind() {
