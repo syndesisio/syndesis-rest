@@ -155,6 +155,7 @@
     <module>jsondb</module>
     <module>rest</module>
     <module>runtime</module>
+    <module>code-reports</module>
   </modules>
 
   <dependencyManagement>
