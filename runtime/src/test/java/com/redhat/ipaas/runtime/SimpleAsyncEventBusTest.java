@@ -26,10 +26,10 @@ import static org.junit.Assert.assertEquals;
 /**
  * Used to test the SimpleEventBus
  */
-public class SimpleEventBusTest {
+public class SimpleAsyncEventBusTest {
 
-    private SimpleEventBus createEventBus() {
-        return new SimpleEventBus();
+    private SimpleAsyncEventBus createEventBus() {
+        return new SimpleAsyncEventBus();
     }
 
     @Test
@@ -56,7 +56,7 @@ public class SimpleEventBusTest {
 
     @Test
     public void testBroadcast() throws InterruptedException {
-        CountDownLatch done = new CountDownLatch(2);
+        CountDownLatch done = new CountDownLatch(20);
         String sub1[] = new String[2];
         String sub2[] = new String[2];
         EventBus eventBus = createEventBus();
@@ -73,15 +73,17 @@ public class SimpleEventBusTest {
             done.countDown();
         });
 
-        // Now send an event to that subscriber.
-        eventBus.broadcast("text", "data");
-
+        for (int i=0; i<10; i++) {
+            // Now send an event to that subscriber.
+            eventBus.broadcast("text" + i, "data" + i);
+        }
         // the send could be done async, so we wait for it to complete.
         done.await(5, TimeUnit.SECONDS);
-        assertEquals("text", sub1[0]);
-        assertEquals("data", sub1[1]);
-        assertEquals("text", sub2[0]);
-        assertEquals("data", sub2[1]);
+        // the queue is FIFO so we should always find the last message
+        assertEquals("text9", sub1[0]);
+        assertEquals("data9", sub1[1]);
+        assertEquals("text9", sub2[0]);
+        assertEquals("data9", sub2[1]);
     }
 
 }
