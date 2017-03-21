@@ -15,18 +15,25 @@
  */
 package com.redhat.ipaas.runtime;
 
-import java.util.ArrayList;
-
 import com.redhat.ipaas.model.ListResult;
 import com.redhat.ipaas.model.integration.Integration;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class IntegrationsITCase extends BaseITCase {
+
+    @BeforeClass
+    static public void resourceEncodingCheck() throws UnsupportedEncodingException {
+        BaseITCase.resourceEncodingCheck();
+    }
 
     @Before
     public void databaseReset() {

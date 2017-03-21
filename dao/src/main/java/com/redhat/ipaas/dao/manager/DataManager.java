@@ -95,8 +95,8 @@ public class DataManager implements DataAccessObjectRegistry {
             Class<? extends WithId> clazz = (Class<? extends WithId>) modelData.getKind().modelClass;
             Kind kind = modelData.getKind();
 
-            LOGGER.debug(kind + ":" + modelData.getData());
-            WithId entity = clazz.cast(mapper.readValue(modelData.getData(), clazz));
+            LOGGER.debug(kind + ":" + modelData.getDataAsJson());
+            WithId entity = (WithId) modelData.getData();
             Optional<String> id = entity.getId();
             if (!id.isPresent()) {
                 LOGGER.warn("Cannot load entity from file since it's missing an id: " + modelData.toJson());
@@ -266,4 +266,9 @@ public class DataManager implements DataAccessObjectRegistry {
         }
     }
 
+    public void clearCache() {
+        for (Kind kind : Kind.values()) {
+            caches.getCache(kind.modelName).clear();
+        }
+    }
 }
