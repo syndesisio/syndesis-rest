@@ -22,4 +22,19 @@ public class OpenShiftServiceNoOp implements OpenShiftService {
         // Empty no-op just for testing
     }
 
+    @Override
+    public void scaleDeploymentConfig(String name, int replicas) {
+        // Empty no-op just for testing
+    }
+
+    @Override
+    public void enableDeploymentConfig(String name) {
+        // Empty no-op just for testing
+    }
+
+    @Override
+    public void disableDeploymentConfig(String name) {
+        // Empty no-op just for testing
+    }
+
 }

@@ -19,4 +19,24 @@ public interface OpenShiftService {
 
     void createOpenShiftResources(String name, String gitRepo, String webhookSecret);
 
+
+    /**
+     * Sets the desired replicas of the specified {@link io.fabric8.openshift.api.model.DeploymentConfig} to the specified value.
+     * @param name      The name of the {@link io.fabric8.openshift.api.model.DeploymentConfig}.
+     * @param replicas  The number of replicas.
+     */
+    void scaleDeploymentConfig(String name, int replicas);
+
+    /**
+     * Sets the desired replicas of the specified {@link io.fabric8.openshift.api.model.DeploymentConfig} to 1.
+     * @param name  The name of the {@link io.fabric8.openshift.api.model.DeploymentConfig}.
+     */
+    void enableDeploymentConfig(String name);
+
+    /**
+     * Sets the desired replicas of the specified {@link io.fabric8.openshift.api.model.DeploymentConfig} to 0.
+     * @param name  The name of the {@link io.fabric8.openshift.api.model.DeploymentConfig}.
+     */
+    void disableDeploymentConfig(String name);
+
 }
