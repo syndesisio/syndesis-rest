@@ -31,9 +31,9 @@ import java.util.Optional;
 @JsonDeserialize(builder = Integration.Builder.class)
 public interface Integration extends WithId<Integration>, WithName, Serializable {
 
-    public static enum Type {Activated, Deactivated, Draft};
+    public static enum Type {Activated, Deactivated, Deleted, Draft};
 
-    public static enum Phase {Pending, Running, Succeeded, Failed, Unknown};
+    public static enum Phase {ACTIVATED, DEACTIVATED, DELETED, PENDING};
 
     /**
      *Required Labels
@@ -75,9 +75,11 @@ public interface Integration extends WithId<Integration>, WithName, Serializable
 
     Optional<String> getGitRepo();
 
-    Optional<Type> getStatusType();
+    Optional<Type> getDesiredStatus();
 
-    Optional<Phase> getStatusPhase();
+    Optional<Phase> getCurrentStatus();
+
+    Optional<String> getStatusMessage();
 
     @Override
     default Integration withId(String id) {
