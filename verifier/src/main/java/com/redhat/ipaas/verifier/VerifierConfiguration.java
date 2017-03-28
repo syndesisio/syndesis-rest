@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.redhat.ipaas.project.converter;
+package com.redhat.ipaas.verifier;
 
-import com.redhat.ipaas.model.connection.Connector;
-import com.redhat.ipaas.model.integration.Integration;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 
-import java.io.IOException;
-import java.util.Map;
-
-public interface ProjectGenerator {
-
-    Map<String, byte[]> generate(Integration integration) throws IOException;
-
-    byte[] generatePom(Integration integration) throws IOException;
-
-    byte[] generatePom(Connector connector) throws IOException;
+@Configuration
+@ComponentScan
+public class VerifierConfiguration {
 
 }
