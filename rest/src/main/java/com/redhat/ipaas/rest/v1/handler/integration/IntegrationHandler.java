@@ -22,7 +22,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 
 import com.redhat.ipaas.core.IPaasServerException;
 import com.redhat.ipaas.dao.manager.DataManager;
@@ -105,6 +108,33 @@ public class IntegrationHandler extends BaseHandler implements Lister<Integratio
                 .build();
         Updater.super.update(id, updatedIntegration);
     }
+
+
+    @PUT
+    @Path(value = "/{id}")
+    @Consumes("application/json")
+    public void enable(@PathParam("id") String id)
+    {
+        Integration integration = getDataManager().fetch(Integration.class, id);
+        if (integration == null) {
+            throw new IPaasServerException("Could not find integration with id:" + id);
+        }
+        openShiftService.enableDeploymentConfig(integration.getName());
+    }
+
+    @PUT
+    @Path(value = "/{id}")
+    @Consumes("application/json")
+    public void disable(@PathParam("id") String id)
+    {
+        Integration integration = getDataManager().fetch(Integration.class, id);
+        if (integration == null) {
+            throw new IPaasServerException("Could not find integration with id:" + id);
+        }
+        openShiftService.disableDeploymentConfig(integration.getName());
+    }
+
+
 
     // ==========================================================================
 

@@ -15,8 +15,10 @@
  */
 package com.redhat.ipaas.openshift;
 
+import io.fabric8.kubernetes.api.builder.TypedVisitor;
 import io.fabric8.kubernetes.client.RequestConfig;
 import io.fabric8.kubernetes.client.RequestConfigBuilder;
+import io.fabric8.openshift.api.model.DeploymentConfigSpecBuilder;
 import io.fabric8.openshift.client.NamespacedOpenShiftClient;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -45,6 +47,27 @@ public class OpenShiftServiceImpl implements OpenShiftService {
             ensureBuildConfig(sanitizedName, gitRepo, img, webhookSecret);
             return null;
         });
+    }
+
+    @Override
+    public void scaleDeploymentConfig(String name, final int replicas) {
+        String projectName = sanitizeName(name);
+        openShiftClient.deploymentConfigs().withName(projectName).edit().accept(new TypedVisitor<DeploymentConfigSpecBuilder>() {
+            @Override
+            public void visit(DeploymentConfigSpecBuilder spec) {
+                spec.withReplicas(replicas);
+            }
+        }).done();
+    }
+
+    @Override
+    public void enableDeploymentConfig(String name) {
+     scaleDeploymentConfig(name, 1);
+    }
+
+    @Override
+    public void disableDeploymentConfig(String name) {
+        scaleDeploymentConfig(name, 0);
     }
 
     private void ensureImageStreams(String projectName, DockerImage img) {
