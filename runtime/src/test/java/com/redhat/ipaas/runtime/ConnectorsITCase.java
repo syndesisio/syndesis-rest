@@ -17,10 +17,15 @@ package com.redhat.ipaas.runtime;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.redhat.ipaas.model.ListResult;
+import com.redhat.ipaas.model.ValueResult;
 import com.redhat.ipaas.model.connection.Connector;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,6 +58,37 @@ public class ConnectorsITCase extends BaseITCase {
         Connector connector = response.getBody();
         assertThat(connector).isNotNull();
         assertThat(connector.getId()).contains("twitter");
+    }
+
+    @Test
+    public void verifyGoodTwitterConnectionSettings() throws IOException {
+        Properties credentials = new Properties();
+        try (InputStream is = getClass().getResourceAsStream("/valid-twitter-keys.properties")) {
+            credentials.load(is);
+        }
+
+        ResponseEntity<ValueResult> response = post("/api/v1/connectors/twitter/verify", credentials, ValueResult.class);
+        assertThat(response.getStatusCode()).as("component list status code").isEqualTo(HttpStatus.OK);
+        ValueResult<String> result = response.getBody();
+        assertThat(result).isNotNull();
+        assertThat(result.getValue()).isEqualTo("ok");
+        assertThat(result.getError()).isNull();
+    }
+
+    @Test
+    public void verifyBadTwitterConnectionSettings() throws IOException {
+        Properties credentials = new Properties();
+        try (InputStream is = getClass().getResourceAsStream("/valid-twitter-keys.properties")) {
+            credentials.load(is);
+        }
+        credentials.put("accessTokenSecret", "badtoken");
+
+        ResponseEntity<ValueResult> response = post("/api/v1/connectors/twitter/verify", credentials, ValueResult.class);
+        assertThat(response.getStatusCode()).as("component list status code").isEqualTo(HttpStatus.OK);
+        ValueResult<String> result = response.getBody();
+        assertThat(result).isNotNull();
+        assertThat(result.getValue()).isNull();
+        assertThat(result.getError()).isNotNull();
     }
 
 }
