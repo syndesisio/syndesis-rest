@@ -83,6 +83,8 @@ public interface Integration extends WithId<Integration>, WithName, Serializable
     
     Optional<Date> getLastUpdated();
 
+    Optional<String> getLastUpdatedByUserId();
+
     Optional<BigInteger> getTimesUsed();
 
     @Override

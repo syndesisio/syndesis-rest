@@ -50,6 +50,8 @@ public interface User extends WithId<User>, Serializable {
 
     Optional<String> getOrganizationId();
 
+    Optional<String> offlineRefreshToken();
+
     @Override
     default User withId(String id) {
         return new Builder().createFrom(this).id(id).build();
