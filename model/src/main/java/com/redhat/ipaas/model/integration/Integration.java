@@ -72,6 +72,8 @@ public interface Integration extends WithId<Integration>, WithTags, WithName, Se
     
     Optional<Date> getCreatedDate();
 
+    Optional<String> getLastUpdatedByUserId();
+
     Optional<BigInteger> getTimesUsed();
 
     @Override
