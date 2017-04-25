@@ -15,15 +15,15 @@
  */
 package com.redhat.ipaas.model.environment;
 
-import java.io.Serializable;
-import java.util.List;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.redhat.ipaas.model.Kind;
 import com.redhat.ipaas.model.WithId;
 import com.redhat.ipaas.model.WithName;
-import com.redhat.ipaas.model.user.User;
 import org.immutables.value.Value;
+
+import java.io.Serializable;
+import java.util.List;
+import java.util.Optional;
 
 @Value.Immutable
 @JsonDeserialize(builder = Organization.Builder.class)
@@ -36,7 +36,7 @@ public interface Organization extends WithId<Organization>, WithName, Serializab
 
     List<Environment> getEnvironments();
 
-    List<User> getUsers();
+    Optional<String> userRefeshToken();
 
     @Override
     default Organization withId(String id) {
@@ -44,6 +44,10 @@ public interface Organization extends WithId<Organization>, WithName, Serializab
     }
 
     class Builder extends ImmutableOrganization.Builder {
+    }
+
+    static Organization.Builder builder() {
+        return new Organization.Builder();
     }
 
 }
