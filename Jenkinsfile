@@ -28,7 +28,7 @@ slave {
                     stage 'System Tests'
                     test(component: 'syndesis-rest', namespace: "${testingNamespace}", serviceAccount: 'jenkins')
                  }
-
+            }
         }
     }
 }
