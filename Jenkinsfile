@@ -29,6 +29,5 @@ slave {
                     test(component: 'syndesis-rest', namespace: "${testingNamespace}", serviceAccount: 'jenkins')
                  }
             }
-        }
     }
 }
