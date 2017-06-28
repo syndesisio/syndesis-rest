@@ -128,3 +128,5 @@ curl -k -v https://syndesis.192.168.64.3.xip.io/api/v1/integrations -H "Authoriz
 ```
 oc port-forward $(oc get pods | awk '{ print $1 }' | grep syndesis-rest) 8000:8000
 ```
+
+test
