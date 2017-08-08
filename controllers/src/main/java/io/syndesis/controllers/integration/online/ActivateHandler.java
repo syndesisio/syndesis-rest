@@ -15,7 +15,8 @@
  */
 package io.syndesis.controllers.integration.online;
 
-import io.syndesis.controllers.integration.StatusChangeHandlerProvider;
+import io.syndesis.controllers.integration.StatusChangeHandler;
+import io.syndesis.controllers.integration.StatusUpdate;
 import io.syndesis.core.Names;
 import io.syndesis.core.SyndesisServerException;
 import io.syndesis.core.Tokens;
@@ -24,6 +25,8 @@ import io.syndesis.github.GitHubService;
 import io.syndesis.integration.model.steps.Endpoint;
 import io.syndesis.model.connection.Connector;
 import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import io.syndesis.model.integration.Step;
 import io.syndesis.openshift.ImmutableOpenShiftDeployment;
 import io.syndesis.openshift.OpenShiftDeployment;
@@ -40,12 +43,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-public class ActivateHandler implements StatusChangeHandlerProvider.StatusChangeHandler {
+public class ActivateHandler implements StatusChangeHandler {
 
     // Step used which should be performed only once per integration
     /* default */ static final String STEP_GITHUB = "github-setup";
@@ -66,29 +70,45 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
         this.projectConverter = projectConverter;
     }
 
-    @Override
-    public Set<Integration.Status> getTriggerStatuses() {
-        return Collections.singleton(Integration.Status.Activated);
+    public Set<IntegrationState> getTriggerStatuses() {
+        return Collections.singleton(IntegrationState.Active);
     }
 
-    @Override
-    public StatusUpdate execute(Integration integration) {
-        if (!integration.getToken().isPresent()) {
-            return new StatusUpdate(integration.getCurrentStatus().orElse(null), "No token present");
-        }
 
+    /**
+     *
+     * @param integration
+     * @param revision
+     * @return
+     */
+    @Override
+    public StatusUpdate execute(Integration integration, IntegrationRevision revision) {
+        //TODO: This is clearly wrong, we need something better than that.
+        Integer version = revision.getVersion().orElse(
+            integration.getRevisions()
+                .stream()
+                .map(i -> i.getVersion().orElse(0))
+                .reduce(Integer::max)
+                .orElse(0) + 1);
+
+        IntegrationRevision versionedRevision = revision.withVersion(version);
+
+        if (!integration.getToken().isPresent()) {
+            return new StatusUpdate(version, versionedRevision.getCurrentState(), "No token present");
+        }
 
         if (isTokenExpired(integration)) {
             LOG.info("{} : Token is expired", getLabel(integration));
-            return new StatusUpdate(integration.getCurrentStatus().orElse(null), "Token is expired");
+            return new StatusUpdate(version, versionedRevision.getCurrentState(), "Token is expired");
         }
         String token = storeToken(integration);
 
-        Properties applicationProperties = extractApplicationPropertiesFrom(integration);
+        Properties applicationProperties = extractApplicationPropertiesFrom(versionedRevision);
 
         OpenShiftDeployment deployment = OpenShiftDeployment
             .builder()
             .name(integration.getName())
+            .revisionNumber(version)
             .replicas(1)
             .token(token)
             .applicationProperties(applicationProperties)
@@ -97,7 +117,6 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
         String secret = createSecret();
 
         // TODO: Verify Token and refresh if expired ....
-
         List<String> stepsPerformed = integration.getStepsDone().orElse(new ArrayList<>());
         try {
             String gitCloneUrl = null;
@@ -105,7 +124,7 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
                 User gitHubUser = getGitHubUser();
                 String username = gitHubUser.getLogin();
                 LOG.info("{} : Looked up GitHub user {}", getLabel(integration), username);
-                Map<String, byte[]> projectFiles = createProjectFiles(username, integration);
+                Map<String, byte[]> projectFiles = createProjectFiles(username, integration, revision);
                 LOG.info("{} : Created project files", getLabel(integration));
 
                 gitCloneUrl = ensureGitHubSetup(integration, gitHubUser, getWebHookUrl(deployment, secret), projectFiles);
@@ -123,13 +142,19 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
             }
 
             if (openShiftService.isScaled(deployment)) {
-                return new StatusUpdate(Integration.Status.Activated, stepsPerformed);
-            }
-        } catch (@SuppressWarnings("PMD.AvoidCatchingGenericException") Exception e) {
-            LOG.error("{} : Failure", getLabel(integration), e);
-        }
-        return new StatusUpdate(Integration.Status.Pending, stepsPerformed);
+                //Once an IntegrationRevision is published and transfered to the state Active it becomes immutable and can not be changed afterwards (except for state related properties).
+                dataManager.update(new Integration.Builder().createFrom(integration)
+                    .draftRevision(Optional.empty())
+                    .addRevision(versionedRevision.withCurrentState(IntegrationState.Active))
+                    .deployedRevisionNumber(revision.getVersion())
+                    .build());
 
+                return new StatusUpdate(version, IntegrationState.Active, stepsPerformed);
+            }
+        } catch (@SuppressWarnings("PMD.AvoidCatchingGenericException")Exception e) {
+            LOG.info("{} : Failure", getLabel(integration), e);
+        }
+        return new StatusUpdate(version, IntegrationState.Pending, stepsPerformed);
     }
 
     protected String getCloneURL(Integration integration)  {
@@ -138,17 +163,6 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
         } catch (IOException e) {
             throw SyndesisServerException.launderThrowable(e);
         }
-    }
-
-    private boolean isTokenExpired(Integration integration) {
-        return integration.getToken().isPresent() &&
-               Tokens.isTokenExpired(integration.getToken().get());
-    }
-
-    private String storeToken(Integration integration) {
-        String token = integration.getToken().orElse(null);
-        Tokens.setAuthenticationToken(token);
-        return token;
     }
 
     private String getWebHookUrl(OpenShiftDeployment deployment, String secret) {
@@ -175,10 +189,12 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
         }
     }
 
-    private Map<String, byte[]> createProjectFiles(String username, Integration integration) {
+    private Map<String, byte[]> createProjectFiles(String username, Integration integration, IntegrationRevision revision) {
         try {
             GenerateProjectRequest request = new GenerateProjectRequest.Builder()
-                .integration(integration)
+                .id(integration.getId())
+                .name(integration.getName())
+                .spec(revision.getSpec())
                 .connectors(fetchConnectorsMap())
                 .gitHubRepoName(Names.sanitize(integration.getName()))
                 .gitHubUserLogin(username)
@@ -225,14 +241,14 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
      * The configuration should include:
      *  i) component properties
      *  ii) sensitive endpoint properties that should be masked.
-     * @param integration
+     * @param revision
      * @return
      */
-    private Properties extractApplicationPropertiesFrom(Integration integration) {
+    private Properties extractApplicationPropertiesFrom(IntegrationRevision revision) {
         Properties secrets = new Properties();
         Map<String, Connector> connectorMap = fetchConnectorsMap();
 
-        integration.getSteps().ifPresent(steps -> {
+        revision.getSpec().getSteps().ifPresent(steps -> {
             for (Step step : steps) {
                 if (step.getStepKind().equals(Endpoint.KIND)) {
                     step.getAction().ifPresent(action -> {
@@ -274,8 +290,20 @@ public class ActivateHandler implements StatusChangeHandlerProvider.StatusChange
         return secrets;
     }
 
-    private String getLabel(Integration integration) {
+    private static String getLabel(Integration integration) {
         return "Integration " + integration.getId().orElse("[none]");
+    }
+
+
+    private static boolean isTokenExpired(Integration integration) {
+        return integration.getToken().isPresent() &&
+            Tokens.isTokenExpired(integration.getToken().get());
+    }
+
+    private static String storeToken(Integration integration) {
+        String token = integration.getToken().orElse(null);
+        Tokens.setAuthenticationToken(token);
+        return token;
     }
 
 }

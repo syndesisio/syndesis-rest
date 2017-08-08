@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,12 +16,19 @@
 
 package io.syndesis.controllers.integration;
 
-import java.util.List;
+import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 
-public interface StatusChangeHandlerProvider {
+import java.util.Set;
 
-    List<StatusChangeHandler> getDraftStatusChangeHandlers();
+/**
+ *
+ */
+public interface StatusChangeHandler {
 
-    List<StatusChangeHandler> getDeployedStatusChangeHandlers();
+    Set<IntegrationState> getTriggerStatuses();
+
+    StatusUpdate execute(Integration model, IntegrationRevision revision);
 
 }

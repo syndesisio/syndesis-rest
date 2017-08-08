@@ -44,6 +44,7 @@ import io.syndesis.model.filter.ExpressionFilterStep;
 import io.syndesis.model.filter.FilterPredicate;
 import io.syndesis.model.filter.RuleFilterStep;
 import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationSpec;
 import io.syndesis.model.integration.SimpleStep;
 import io.syndesis.model.integration.Step;
 import io.syndesis.project.converter.ProjectGeneratorProperties.Templates;
@@ -129,12 +130,13 @@ public class DefaultProjectGeneratorTest {
         GenerateProjectRequest request = new GenerateProjectRequest.Builder()
             .gitHubUserLogin("noob")
             .gitHubRepoName("test")
-            .integration(new Integration.Builder()
-                .id("test-integration")
-                .name("Test Integration")
-                .description("This is a test integration!")
-                .steps( Arrays.asList(step1, step2, step3, step4))
-                .build())
+            .id("test-integration")
+            .name("Test Integration")
+            .description("This is a test integration!")
+                .spec(new IntegrationSpec.Builder()
+
+                        .steps( Arrays.asList(step1, step2, step3, step4))
+                        .build())
             .connectors(connectors)
             .build();
 
@@ -162,15 +164,15 @@ public class DefaultProjectGeneratorTest {
         Step step2 = new SimpleStep.Builder().stepKind("endpoint").connection(new Connection.Builder().configuredProperties(map()).build()).configuredProperties(map("httpUri", "http://localhost:8080/hello", "username", "admin", "password", "admin", "token", "mytoken")).action(new Action.Builder().connectorId("http").camelConnectorPrefix("http-get").camelConnectorGAV("io.syndesis:http-get-connector:0.4.5").build()).build();
 
         GenerateProjectRequest request = new GenerateProjectRequest.Builder()
-            .integration(new Integration.Builder()
-                .id("test-integration")
-                .name("Test Integration")
-                .description("This is a test integration!")
-                .steps( Arrays.asList(step1, step2))
-                .build())
+            .id("test-integration")
+            .name("Test Integration")
+            .description("This is a test integration!")
             .connectors(connectors)
             .gitHubUserLogin("noob")
             .gitHubRepoName("test")
+            .spec(new IntegrationSpec.Builder()
+                .steps( Arrays.asList(step1, step2))
+                .build())
             .build();
 
         ProjectGeneratorProperties generatorProperties = new ProjectGeneratorProperties();
@@ -188,13 +190,15 @@ public class DefaultProjectGeneratorTest {
 
     @Test
     public void testConvertFromJson() throws Exception {
-
         JsonNode json = new ObjectMapper().readTree(this.getClass().getResourceAsStream("test-integration.json"));
-
+        Integration integration = new ObjectMapper().registerModule(new Jdk8Module()).readValue(json.get("data").toString(), Integration.class);
         GenerateProjectRequest request = new GenerateProjectRequest.Builder()
+            .id(integration.getId().orElse("[none]"))
+            .name(integration.getName())
+            .description(integration.getDescription())
             .gitHubUserLogin("noob")
             .gitHubRepoName("test")
-            .integration(new ObjectMapper().registerModule(new Jdk8Module()).readValue(json.get("data").toString(), Integration.class))
+            .spec(integration.getDraftRevision().get().getSpec())
             .connectors(connectors)
             .build();
 
@@ -252,11 +256,9 @@ public class DefaultProjectGeneratorTest {
         GenerateProjectRequest request = new GenerateProjectRequest.Builder()
             .gitHubUserLogin("noob")
             .gitHubRepoName("test")
-            .integration(new Integration.Builder()
-                .id("test-integration")
-                .name("Test Integration")
-                .steps( Arrays.asList(step1, step2, step3))
-                .build())
+            .id("test-integration")
+            .name("Test Integration")
+            .spec(new IntegrationSpec.Builder().steps( Arrays.asList(step1, step2, step3)).build())
             .connectors(connectors)
             .build();
 
@@ -288,11 +290,11 @@ public class DefaultProjectGeneratorTest {
         GenerateProjectRequest request = new GenerateProjectRequest.Builder()
             .gitHubUserLogin("noob")
             .gitHubRepoName("test")
-            .integration(new Integration.Builder()
-                .id("test-integration")
-                .name("Test Integration")
-                .steps( Arrays.asList(step1, step2, step3, step4))
-                .build())
+            .id("test-integration")
+            .name("Test Integration")
+            .spec(new IntegrationSpec.Builder()
+                    .steps( Arrays.asList(step1, step2, step3, step4))
+                    .build())
             .connectors(connectors)
             .build();
 

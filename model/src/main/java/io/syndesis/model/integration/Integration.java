@@ -15,12 +15,12 @@
  */
 package io.syndesis.model.integration;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.syndesis.model.Kind;
 import io.syndesis.model.WithId;
 import io.syndesis.model.WithName;
 import io.syndesis.model.WithTags;
-import io.syndesis.model.connection.Connection;
 import io.syndesis.model.user.User;
 import io.syndesis.model.validation.UniqueProperty;
 import io.syndesis.model.validation.UniquenessRequired;
@@ -38,38 +38,44 @@ import java.util.Optional;
 @UniqueProperty(value = "name", groups = UniquenessRequired.class)
 public interface Integration extends WithId<Integration>, WithTags, WithName, Serializable {
 
-    enum Status { Draft, Pending, Activated, Deactivated, Deleted}
-
     @Override
     default Kind getKind() {
         return Kind.Integration;
     }
 
-    Optional<String> getConfiguration();
+    Optional<String> getDescription();
 
-    Optional<String> getIntegrationTemplateId();
+    /**
+     * The list of versioned revisions.
+     * The items in this list should be versioned and are not meant to be mutated.
+     * @return
+     */
+    List<IntegrationRevision> getRevisions();
+
+    Optional<IntegrationRevision> getDraftRevision();
+
+    Optional<Integer> getDeployedRevisionNumber();
+
+    @JsonIgnore
+    default Optional<IntegrationRevision> getDeployedRevision() {
+        return getDeployedRevisionNumber().map(i -> getRevisions()
+            .stream()
+            .filter(r -> r.getVersion().isPresent() && i.equals(r.getVersion().get()))
+            .findFirst()
+            .orElse(null));
+    }
+
+    IntegrationSpec getSpec();
 
     Optional<String> getUserId();
 
     Optional<String> getToken();
 
-    List<User> getUsers();
-
-    Optional<List<Connection>> getConnections();
-
-    Optional<List<? extends Step>> getSteps();
-
-    Optional<String> getDescription();
-
     Optional<String> getGitRepo();
 
-    Optional<Status> getDesiredStatus();
-
-    Optional<Status> getCurrentStatus();
+    List<User> getUsers();
 
     Optional<List<String>> getStepsDone();
-
-    Optional<String> getStatusMessage();
 
     Optional<Date> getLastUpdated();
 

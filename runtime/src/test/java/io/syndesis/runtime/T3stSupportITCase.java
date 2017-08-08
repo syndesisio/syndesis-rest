@@ -17,6 +17,8 @@ package io.syndesis.runtime;
 
 import io.syndesis.dao.init.ModelData;
 import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -51,9 +53,11 @@ public class T3stSupportITCase extends BaseITCase {
         Integration integration = new Integration.Builder()
             .id("2001")
             .name("test")
-            .desiredStatus(Integration.Status.Draft)
-            .currentStatus(Integration.Status.Draft)
-            .build();
+            .draftRevision(new IntegrationRevision.Builder()
+                .targetState(IntegrationState.Draft)
+                .currentState(IntegrationState.Draft)
+                .build()
+            ).build();
         post("/api/v1/integrations", integration, Integration.class);
 
         // Snapshot should only contain the integration entity..

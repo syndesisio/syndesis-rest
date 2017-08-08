@@ -16,8 +16,6 @@
 package io.syndesis.project.converter;
 
 
-import io.syndesis.model.integration.Integration;
-
 import java.io.IOException;
 import java.util.Map;
 
@@ -26,5 +24,5 @@ public interface ProjectGenerator {
 
     Map<String, byte[]> generate(GenerateProjectRequest request) throws IOException;
 
-    byte[] generatePom(Integration integration) throws IOException;
+    byte[] generatePom(GenerateProjectRequest request) throws IOException;
 }
