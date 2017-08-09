@@ -27,7 +27,7 @@
 
   <groupId>io.syndesis</groupId>
   <artifactId>syndesis-rest-parent</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1.0.fuse-000005</version>
   <packaging>pom</packaging>
   <name>Syndesis REST :: Parent</name>
 
@@ -115,7 +115,7 @@
 
     <assertj-core.version>3.6.2</assertj-core.version>
     <caffeine.version>2.4.0</caffeine.version>
-    <camel.version>2.19.0</camel.version>
+    <camel.version>2.20.0.fuse-000070</camel.version>
     <jdbi.version>2.78</jdbi.version>
     <hibernate.validator.version>5.3.5.Final</hibernate.validator.version>
     <immutables.version>2.5.1</immutables.version>
@@ -132,7 +132,7 @@
     <spring.version>4.3.10.RELEASE</spring.version>
     <spring-boot.version>1.5.6.RELEASE</spring-boot.version>
     <spring-cloud.version>Dalston.SR2</spring-cloud.version>
-    <spring-cloud-kubernetes.version>0.1.6</spring-cloud-kubernetes.version>
+    <spring-cloud-kubernetes.version>0.1.0.fuse-000048</spring-cloud-kubernetes.version>
     <spring-cloud-sleuth.version>1.2.2.RELEASE</spring-cloud-sleuth.version>
     <spring-security.version>4.2.3.RELEASE</spring-security.version>
     <spring-social.version>1.1.4.RELEASE</spring-social.version>
