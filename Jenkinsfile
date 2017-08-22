@@ -1,5 +1,3 @@
-def mavenVersion='3.3.9'
-
 properties([
     buildDiscarder(logRotator(numToKeepStr: '5', artifactNumToKeepStr: '5'))
 ])
@@ -14,7 +12,7 @@ node {
     slave {
         withOpenshift {
             withMaven(
-                mavenImage: "maven:${mavenVersion}",
+                mavenImage: "openjdk:8",
                 envVars: [
                     containerEnvVar(key:'GITHUB_OAUTH_CLIENT_ID', value: "${env.GITHUB_OAUTH_CLIENT_ID}"),
                     containerEnvVar(key:'GITHUB_OAUTH_CLIENT_SECRET', value: "${env.GITHUB_OAUTH_CLIENT_SECRET}")
@@ -27,7 +25,7 @@ node {
 
                     stage('Build') {
                         container(name: 'maven') {
-                            sh "mvn -U clean install fabric8:build -Pci -Duser.home=/home/jenkins"
+                            sh "./mvnw -U clean install fabric8:build -Pci -Duser.home=/home/jenkins"
                         }
                     }
 
