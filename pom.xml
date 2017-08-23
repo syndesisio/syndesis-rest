@@ -27,7 +27,7 @@
 
   <groupId>io.syndesis</groupId>
   <artifactId>syndesis-rest-parent</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1.0.fuse-000007</version>
   <packaging>pom</packaging>
   <name>Syndesis REST :: Parent</name>
 
@@ -138,8 +138,8 @@
     <spring-social.version>1.1.4.RELEASE</spring-social.version>
     <swagger.version>1.5.12</swagger.version>
     <undertow.version>1.4.18.Final</undertow.version>
-    <atlasmap.version>1.17.0</atlasmap.version>
-    <camel-atlasmap.version>1.18.0</camel-atlasmap.version>
+    <atlasmap.version>1.19.0.fuse-000001</atlasmap.version>
+    <camel-atlasmap.version>1.19.0.fuse-000001</camel-atlasmap.version>
 
     <!-- maven plugin version -->
     <dep.plugin.dependency.version>3.0.1</dep.plugin.dependency.version>
