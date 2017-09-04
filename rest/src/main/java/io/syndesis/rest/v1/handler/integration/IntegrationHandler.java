@@ -175,18 +175,6 @@ public class IntegrationHandler extends BaseHandler
         return new FilterOptions.Builder().addOp(Op.DEFAULT_OPTS).build();
     }
 
-    // Determine the current status to 'pending' or 'draft' immediately depending on
-    // the desired stated. This status will be later changed by the activation handlers.
-    // This is not the best place to set but should be done by the IntegrationController
-    // However because of how the Controller works (i.e. that any change to the integration
-    // within the controller will trigger an event again), the initial status must be set
-    // from the outside for the moment.
-    private IntegrationState determineCurrentStatus(IntegrationRevision revision) {
-        IntegrationState desiredStatus = revision.getTargetState();
-        return desiredStatus == IntegrationState.Draft ?
-            IntegrationState.Draft :
-            IntegrationState.Pending;
-    }
 
     @Override
     public Validator getValidator() {
