@@ -17,6 +17,7 @@ package io.syndesis.dao;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -29,6 +30,8 @@ import io.syndesis.model.connection.Connection;
 import io.syndesis.model.connection.Connector;
 import io.syndesis.model.integration.Integration;
 
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -102,14 +105,21 @@ public class DataManagerTest {
     public void getIntegration() throws IOException {
         Integration integration = dataManager.fetch(Integration.class, "1");
         Assert.assertEquals("Example Integration", "Twitter to Salesforce Example", integration.getName());
-        Assert.assertEquals(4, integration.getSteps().get().size());
+        Assert.assertEquals(4, integration.getDeployedRevision().get().getSpec().getSteps().get().size());
         Assert.assertTrue(integration.getTags().contains("example"));
 
         //making sure we can deserialize Enums such as StatusType
-        Integration int2 = new Integration.Builder().createFrom(integration).desiredStatus(Integration.Status.Activated).build();
+        Integration int2 = new Integration.Builder()
+            .createFrom(integration)
+            .revisions(Arrays.<IntegrationRevision>asList(new IntegrationRevision.Builder()
+                .createFrom(integration.getDeployedRevision().get())
+                .targetState(IntegrationState.Active)
+                .build()))
+            .build();
+
         String json = Json.mapper().writeValueAsString(int2);
         Integration int3 = Json.mapper().readValue(json, Integration.class);
-        Assert.assertEquals(int2.getDesiredStatus(), int3.getDesiredStatus());
+        Assert.assertEquals(int2.getDeployedRevision().map(r -> r.getTargetState()), int3.getDeployedRevision().map(r -> r.getTargetState()));
     }
 
     @Test

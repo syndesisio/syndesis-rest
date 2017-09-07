@@ -31,6 +31,8 @@ import io.syndesis.model.connection.Connector;
 import io.syndesis.model.connection.ConnectorGroup;
 import io.syndesis.model.integration.Integration;
 
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -43,14 +45,18 @@ public class ReadApiClientDataTest {
     public void deserializeModelDataTest() throws IOException {
 
         Integration integrationIn = new Integration.Builder()
-                    .desiredStatus(Integration.Status.Activated)
+                    .draftRevision(new IntegrationRevision.Builder()
+                        .version(1)
+                        .targetState(IntegrationState.Active)
+                        .build())
                     .tags(new TreeSet<>(Arrays.asList("tag1", "tag2")))
                     .createdDate(new Date())
                     .build();
+
         String integrationJson = mapper.writeValueAsString(integrationIn);
         System.out.println(integrationJson);
         Integration integrationOut = mapper.readValue(integrationJson, Integration.class);
-        Assert.assertEquals(integrationIn.getDesiredStatus(), integrationOut.getDesiredStatus());
+        Assert.assertEquals(integrationIn.getDraftRevision().get().getTargetState(), integrationOut.getDraftRevision().get().getTargetState());
 
         //serialize
         ConnectorGroup cg = new ConnectorGroup.Builder().id("label").name("label").build();

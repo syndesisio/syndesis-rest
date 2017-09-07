@@ -91,6 +91,7 @@ public class TestSupportHandler {
         for (Integration i : integrations) {
             OpenShiftDeployment deployment = OpenShiftDeployment
                 .builder()
+                .revisionNumber(i.getDeployedRevisionNumber().orElse(0))
                 .name(i.getName())
                 .token(Tokens.getAuthenticationToken())
                 .build();

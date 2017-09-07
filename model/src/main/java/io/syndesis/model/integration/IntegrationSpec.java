@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2016 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,14 +14,26 @@
  * limitations under the License.
  */
 
-package io.syndesis.controllers.integration;
+package io.syndesis.model.integration;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.syndesis.model.connection.Connection;
+import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Optional;
 
-public interface StatusChangeHandlerProvider {
+@Value.Immutable
+@JsonDeserialize(builder = IntegrationSpec.Builder.class)
+public interface IntegrationSpec {
 
-    List<StatusChangeHandler> getDraftStatusChangeHandlers();
+    Optional<String> getConfiguration();
 
-    List<StatusChangeHandler> getDeployedStatusChangeHandlers();
+    Optional<List<Connection>> getConnections();
+
+    Optional<List<? extends Step>> getSteps();
+
+    class Builder extends ImmutableIntegrationSpec.Builder {
+    }
 
 }
