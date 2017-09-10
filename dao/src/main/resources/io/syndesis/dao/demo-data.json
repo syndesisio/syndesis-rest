@@ -25,7 +25,10 @@
       "description": "Salesforce Connection",
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "tags":["example","test"],
+      "tags": [
+        "example",
+        "test"
+      ],
       "icon": "fa-globe",
       "connectorId": "salesforce",
       "configuredProperties": {
@@ -44,7 +47,10 @@
       "description": "HTTP Connection",
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "tags":["example","test"],
+      "tags": [
+        "example",
+        "test"
+      ],
       "icon": "fa-globe",
       "connectorId": "http",
       "configuredProperties": {}
@@ -58,7 +64,10 @@
       "description": "Timer Connection",
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "tags":["example","test"],
+      "tags": [
+        "example",
+        "test"
+      ],
       "icon": "fa-globe",
       "connectorId": "timer",
       "configuredProperties": {}
@@ -70,16 +79,24 @@
       "id": "1",
       "name": "Twitter to Salesforce Example",
       "description": "This is an example of a Twitter to Salesforce integration",
-      "configuration": "",
+      "tags": [
+        "example",
+        "test"
+      ],
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "tags":["example","test"],
-      "currentStatus": "Activated",
-      "desiredStatus": "Activated",
-      "steps": [
-        {
-          "id": "1",
-          "stepKind": "endpoint",
+      "deployedRevisionId": 1,
+      "revisions": [
+      {
+      "status": {
+        "version": 1,
+          "state": "Active"
+          },
+          "spec": {
+            "state": "Active",
+            "steps": [
+              {
+                "stepKind": "endpoint",
           "connection": {
             "id": "1",
             "name": "Twitter Example",
@@ -100,7 +117,7 @@
             "name": "Twitter Mention",
             "camelConnectorGAV": "io.syndesis:twitter-mention-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "twitter-mention",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                   "kind" : "none"
               },
@@ -108,24 +125,23 @@
                   "kind" : "java",
                   "type" : "twitter4j.Status"
               }
-            }
-          },
+            }},
           "configuredProperties": {
           }
-        },{
-          "id": "2",
+        },
+          {
           "stepKind": "filter",
           "configuredProperties": {
             "filter": "${body.text} contains \"#RHSummit\""
             }
-        },{
-          "id": "3",
+        },
+          {
           "stepKind": "mapper",
           "configuredProperties": {
             "atlasmapping": "{ \"AtlasMapping\": { \"jsonType\": \"com.mediadriver.atlas.v2.AtlasMapping\", \"properties\": { \"property\": [] }, \"fieldMappings\": { \"fieldMapping\": [ { \"jsonType\": \"com.mediadriver.atlas.v2.SeparateFieldMapping\", \"inputField\": { \"jsonType\": \"com.mediadriver.atlas.v2.MappedField\", \"field\": { \"jsonType\": \"com.mediadriver.atlas.java.v2.JavaField\", \"name\": \"Name\", \"path\": \"User.name\", \"type\": \"STRING\", \"getMethod\": \"getName\" }, \"fieldActions\": { \"fieldAction\": [] } }, \"outputFields\": { \"mappedField\": [ { \"jsonType\": \"com.mediadriver.atlas.v2.MappedField\", \"field\": { \"jsonType\": \"com.mediadriver.atlas.java.v2.JavaField\", \"name\": \"FirstName\", \"path\": \"FirstName\", \"type\": \"STRING\", \"setMethod\": \"setFirstName\" }, \"fieldActions\": { \"fieldAction\": [ { \"jsonType\": \"com.mediadriver.atlas.v2.MapAction\", \"index\": 0 } ] } }, { \"jsonType\": \"com.mediadriver.atlas.v2.MappedField\", \"field\": { \"jsonType\": \"com.mediadriver.atlas.java.v2.JavaField\", \"name\": \"LastName\", \"path\": \"LastName\", \"type\": \"STRING\", \"setMethod\": \"setLastName\" }, \"fieldActions\": { \"fieldAction\": [ { \"jsonType\": \"com.mediadriver.atlas.v2.MapAction\", \"index\": 1 } ] } } ] } }, { \"jsonType\": \"com.mediadriver.atlas.v2.MapFieldMapping\", \"inputField\": { \"jsonType\": \"com.mediadriver.atlas.v2.MappedField\", \"field\": { \"jsonType\": \"com.mediadriver.atlas.java.v2.JavaField\", \"name\": \"Text\", \"path\": \"Text\", \"type\": \"STRING\", \"getMethod\": \"getText\" }, \"fieldActions\": { \"fieldAction\": [] } }, \"outputField\": { \"jsonType\": \"com.mediadriver.atlas.v2.MappedField\", \"field\": { \"jsonType\": \"com.mediadriver.atlas.java.v2.JavaField\", \"name\": \"Description\", \"path\": \"description\", \"type\": \"STRING\", \"setMethod\": \"setDescription\" }, \"fieldActions\": { \"fieldAction\": [] } } }, { \"jsonType\": \"com.mediadriver.atlas.v2.MapFieldMapping\", \"inputField\": { \"jsonType\": \"com.mediadriver.atlas.v2.MappedField\", \"field\": { \"jsonType\": \"com.mediadriver.atlas.java.v2.JavaField\", \"name\": \"ScreenName\", \"path\": \"User.screenName\", \"type\": \"STRING\", \"getMethod\": \"getScreenName\" }, \"fieldActions\": { \"fieldAction\": [] } }, \"outputField\": { \"jsonType\": \"com.mediadriver.atlas.v2.MappedField\", \"field\": { \"jsonType\": \"com.mediadriver.atlas.java.v2.JavaField\", \"name\": \"Title\", \"path\": \"Title\", \"type\": \"STRING\", \"setMethod\": \"setTitle\" }, \"fieldActions\": { \"fieldAction\": [] } } } ] }, \"name\": \"twitterStatusToSalesforceContact\", \"sourceUri\": \"atlas:java?className=twitter4j.Status\", \"targetUri\": \"atlas:java?className=io.syndesis.connector.salesforce.Contact\" } } "
            }
-        },{
-          "id": "4",
+        },
+          {
           "stepKind": "endpoint",
           "connection": {
             "id": "2",
@@ -157,7 +173,9 @@
               }
             }
           },
-          "configuredProperties": {
+          "configuredProperties": {}
+              }
+            ]
           }
         }
       ]
@@ -169,16 +187,21 @@
       "id": "2",
       "name": "Timed Pull to Post Example",
       "description": "This is an example of a Timed Pull to Post Integration",
-      "configuration": "",
-      "createdDate": 1492095344060,
-      "lastUpdated": 1492095344060,
-      "desiredStatus": "Activated",
-      "currentStatus": "Activated",
-      "statusMessage": "This integration failed. Please contact system admin for errors.",
-      "tags":["example","test"],
+      "tags": [
+      "example",
+      "test"
+      ],
+      "deployedRevisionId": 1,
+      "revisions": [
+        {
+          "status": {
+            "version": 1,
+            "state": "Active",
+            "message": "This integration failed. Please contact system admin for errors."
+      },
+          "spec": {
       "steps": [
         {
-          "id": "5",
           "stepKind": "endpoint",
           "connection": {
             "id": "4",
@@ -194,20 +217,19 @@
             "description": "Set a timer that fires at intervals that you specify",
             "camelConnectorGAV": "io.syndesis:timer-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "periodic-timer",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "none"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "period": "500"
           }
-        },{
-          "id": "6",
+        },
+          {
           "stepKind": "log",
           "configuredProperties": {
             "message": "Hello World! ${body}",
@@ -215,7 +237,6 @@
           }
         },
         {
-          "id": "7",
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -231,20 +252,19 @@
             "description": "Call a service that is internal (within your company) or external (on the internet) by specifying the service's URL",
             "camelConnectorGAV": "io.syndesis:http-post-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "http-post",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "any"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "httpUri": "http://localhost:8080/bye"
           }
-        },{
-          "id": "8",
+        },
+          {
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -270,7 +290,9 @@
             }
           },
           "configuredProperties": {
-            "httpUri": "http://localhost:8080/hello"
+            "httpUri": "http://localhost:8080/hello"}
+              }
+            ]
           }
         }
       ]
@@ -282,15 +304,23 @@
       "id": "3",
       "name": "Breakaway Example",
       "description": "This is an example in Active state",
-      "configuration": "",
+      "tags": [
+        "example",
+        "test"
+      ],
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "desiredStatus": "Activated",
-      "currentStatus": "Activated",
-      "tags":["example","test"],
-      "steps": [
-        {
-          "id": "5",
+      "deployedRevisionId": 1,
+      "revisions": [
+      {
+      "status": {
+        "version": 1,
+          "state": "Active"
+          },
+          "spec": {
+            "state": "Active",
+            "steps": [
+              {
           "stepKind": "endpoint",
           "connection": {
             "id": "4",
@@ -306,20 +336,19 @@
             "description": "Set a timer that fires at intervals that you specify",
             "camelConnectorGAV": "io.syndesis:timer-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "periodic-timer",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "none"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "period": "500"
           }
-        },{
-          "id": "6",
+        },
+          {
           "stepKind": "log",
           "configuredProperties": {
             "message": "Hello World! ${body}",
@@ -327,7 +356,6 @@
           }
         },
         {
-          "id": "7",
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -343,20 +371,19 @@
             "description": "Call a service that is internal (within your company) or external (on the internet) by specifying the service's URL",
             "camelConnectorGAV": "io.syndesis:http-post-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "http-post",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "any"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "httpUri": "http://localhost:8080/bye"
           }
-        },{
-          "id": "8",
+        },
+          {
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -382,7 +409,9 @@
             }
           },
           "configuredProperties": {
-            "httpUri": "http://localhost:8080/hello"
+            "httpUri": "http://localhost:8080/hello"}
+              }
+            ]
           }
         }
       ]
@@ -393,16 +422,24 @@
     "data": {
       "id": "4",
       "name": "Facebook Message to Twitter",
-      "description": "This is an example in Deactivated state",
-      "configuration": "",
+      "description": "This is an example in Inactive state",
+      "tags": [
+        "example",
+        "test"
+      ],
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "desiredStatus": "Deactivated",
-      "currentStatus": "Deactivated",
-      "tags":["example","test"],
-      "steps": [
-        {
-          "id": "5",
+      "deployedRevisionId": 1,
+      "revisions": [
+      {
+      "status": {
+        "version": 1,
+          "state": "Inactive"
+          },
+          "spec": {
+            "state": "Inactive",
+            "steps": [
+              {
           "stepKind": "endpoint",
           "connection": {
             "id": "4",
@@ -418,20 +455,19 @@
             "description": "Set a timer that fires at intervals that you specify",
             "camelConnectorGAV": "io.syndesis:timer-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "periodic-timer",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "none"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "period": "500"
           }
-        },{
-          "id": "6",
+        },
+          {
           "stepKind": "log",
           "configuredProperties": {
             "message": "Hello World! ${body}",
@@ -439,7 +475,6 @@
           }
         },
         {
-          "id": "7",
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -455,20 +490,19 @@
             "description": "Call a service that is internal (within your company) or external (on the internet) by specifying the service's URL",
             "camelConnectorGAV": "io.syndesis:http-post-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "http-post",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "any"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "httpUri": "http://localhost:8080/bye"
           }
-        },{
-          "id": "8",
+        },
+          {
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -494,7 +528,9 @@
             }
           },
           "configuredProperties": {
-            "httpUri": "http://localhost:8080/hello"
+            "httpUri": "http://localhost:8080/hello"}
+              }
+            ]
           }
         }
       ]
@@ -506,15 +542,20 @@
       "id": "5",
       "name": "Facebook Photo to Twitter",
       "description": "This is an example in Pending state",
-      "configuration": "",
+      "tags": [
+        "example",
+        "test"
+      ],
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "desiredStatus": "Activated",
-      "currentStatus": "Pending",
-      "tags":["example","test"],
-      "steps": [
-        {
-          "id": "5",
+      "draftRevision": {
+      "status": {
+      "state": "Inactive"
+      },
+        "spec":{
+          "state": "Active",
+          "steps": [
+            {
           "stepKind": "endpoint",
           "connection": {
             "id": "4",
@@ -530,20 +571,19 @@
             "description": "Set a timer that fires at intervals that you specify",
             "camelConnectorGAV": "io.syndesis:timer-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "periodic-timer",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "none"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "period": "500"
           }
-        },{
-          "id": "6",
+        },
+          {
           "stepKind": "log",
           "configuredProperties": {
             "message": "Hello World! ${body}",
@@ -551,7 +591,6 @@
           }
         },
         {
-          "id": "7",
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -567,20 +606,19 @@
             "description": "Call a service that is internal (within your company) or external (on the internet) by specifying the service's URL",
             "camelConnectorGAV": "io.syndesis:http-post-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "http-post",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "any"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "httpUri": "http://localhost:8080/bye"
           }
-        },{
-          "id": "8",
+        },
+          {
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -609,7 +647,8 @@
             "httpUri": "http://localhost:8080/hello"
           }
         }
-      ]
+      ]}
+      }
     }
   },
   {
@@ -618,15 +657,23 @@
       "id": "6",
       "name": "Update Client Service Example",
       "description": "This is an example in Draft state",
-      "configuration": "",
+      "tags": [
+        "example",
+        "test"
+      ],
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "desiredStatus": "Draft",
-      "currentStatus": "Draft",
-      "tags":["example","test"],
-      "steps": [
+      "deployedRevisionId": 1,
+      "revisions": [
         {
-          "id": "5",
+          "status": {
+            "version": 1,
+            "state": "Draft"
+      },
+      "spec": {
+        "state": "Draft",
+          "steps": [
+              {
           "stepKind": "endpoint",
           "connection": {
             "id": "4",
@@ -642,20 +689,19 @@
             "description": "Set a timer that fires at intervals that you specify",
             "camelConnectorGAV": "io.syndesis:timer-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "periodic-timer",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "none"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "period": "500"
           }
-        },{
-          "id": "6",
+        },
+          {
           "stepKind": "log",
           "configuredProperties": {
             "message": "Hello World! ${body}",
@@ -663,7 +709,6 @@
           }
         },
         {
-          "id": "7",
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -679,20 +724,19 @@
             "description": "Call a service that is internal (within your company) or external (on the internet) by specifying the service's URL",
             "camelConnectorGAV": "io.syndesis:http-post-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "http-post",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "any"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "httpUri": "http://localhost:8080/bye"
           }
-        },{
-          "id": "8",
+        },
+          {
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -718,7 +762,9 @@
             }
           },
           "configuredProperties": {
-            "httpUri": "http://localhost:8080/hello"
+            "httpUri": "http://localhost:8080/hello"}
+              }
+            ]
           }
         }
       ]
@@ -728,17 +774,25 @@
     "kind": "integration",
     "data": {
       "id": "7",
-      "name": "Deleted Client Service Example",
-      "description": "This is an example in Deleted state",
-      "configuration": "",
+      "name": "Undeployed Client Service Example",
+      "description": "This is an example in Undeployed state",
+      "tags": [
+        "example",
+        "test"
+      ],
       "createdDate": 1492095344060,
       "lastUpdated": 1492095344060,
-      "desiredStatus": "Deleted",
-      "currentStatus": "Deleted",
-      "tags":["example","test"],
-      "steps": [
-        {
-          "id": "5",
+      "deployedRevisionId": 1,
+      "revisions": [
+      {
+      "status": {
+        "version": 1,
+          "state": "Undeployed"
+          },
+          "spec": {
+            "state": "Undeployed",
+            "steps": [
+              {
           "stepKind": "endpoint",
           "connection": {
             "id": "4",
@@ -754,20 +808,19 @@
             "description": "Set a timer that fires at intervals that you specify",
             "camelConnectorGAV": "io.syndesis:timer-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "periodic-timer",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "none"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "period": "500"
           }
-        },{
-          "id": "6",
+        },
+          {
           "stepKind": "log",
           "configuredProperties": {
             "message": "Hello World! ${body}",
@@ -775,7 +828,6 @@
           }
         },
         {
-          "id": "7",
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -791,20 +843,19 @@
             "description": "Call a service that is internal (within your company) or external (on the internet) by specifying the service's URL",
             "camelConnectorGAV": "io.syndesis:http-post-connector:@syndesis-connectors.version@",
             "camelConnectorPrefix": "http-post",
-            "definition": {
+          "definition": {
               "inputDataShape": {
                  "kind" : "any"
               },
               "outputDataShape": {
                  "kind" : "any"
               }
-            }
-          },
+            }},
           "configuredProperties": {
             "httpUri": "http://localhost:8080/bye"
           }
-        },{
-          "id": "8",
+        },
+          {
           "stepKind": "endpoint",
           "connection": {
             "id": "3",
@@ -830,7 +881,9 @@
             }
           },
           "configuredProperties": {
-            "httpUri": "http://localhost:8080/hello"
+            "httpUri": "http://localhost:8080/hello"}
+              }
+            ]
           }
         }
       ]

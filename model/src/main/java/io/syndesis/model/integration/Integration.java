@@ -15,61 +15,63 @@
  */
 package io.syndesis.model.integration;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.syndesis.model.Kind;
-import io.syndesis.model.WithId;
-import io.syndesis.model.WithName;
-import io.syndesis.model.WithTags;
-import io.syndesis.model.connection.Connection;
-import io.syndesis.model.user.User;
-import io.syndesis.model.validation.UniqueProperty;
-import io.syndesis.model.validation.UniquenessRequired;
-
-import org.immutables.value.Value;
-
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.syndesis.model.Kind;
+import io.syndesis.model.WithId;
+import io.syndesis.model.WithName;
+import io.syndesis.model.WithTags;
+import io.syndesis.model.validation.UniqueProperty;
+import io.syndesis.model.validation.UniquenessRequired;
+import org.immutables.value.Value;
+
 @Value.Immutable
 @JsonDeserialize(builder = Integration.Builder.class)
 @UniqueProperty(value = "name", groups = UniquenessRequired.class)
 public interface Integration extends WithId<Integration>, WithTags, WithName, Serializable {
-
-    enum Status { Draft, Pending, Activated, Deactivated, Deleted}
 
     @Override
     default Kind getKind() {
         return Kind.Integration;
     }
 
-    Optional<String> getConfiguration();
+    Optional<String> getDescription();
 
-    Optional<String> getIntegrationTemplateId();
+    /**
+     * The list of versioned revisions.
+     * The items in this list should be versioned and are not meant to be mutated.
+     * @return
+     */
+    List<IntegrationRevision> getRevisions();
+
+    Optional<IntegrationRevision> getDraftRevision();
+
+    Optional<Integer> getDeployedRevisionId();
+
+    @JsonIgnore
+    default Optional<IntegrationRevision> getDeployedRevision() {
+        return getDeployedRevisionId().map(i -> getRevisions()
+            .stream()
+            .filter(r -> r.getVersion().isPresent() && i.equals(r.getVersion().get()))
+            .findFirst()
+            .orElse(null));
+    }
+
+    IntegrationRevisionSpec getSpec();
 
     Optional<String> getUserId();
 
     Optional<String> getToken();
 
-    List<User> getUsers();
-
-    Optional<List<Connection>> getConnections();
-
-    Optional<List<? extends Step>> getSteps();
-
-    Optional<String> getDescription();
-
     Optional<String> getGitRepo();
 
-    Optional<Status> getDesiredStatus();
-
-    Optional<Status> getCurrentStatus();
-
     Optional<List<String>> getStepsDone();
-
-    Optional<String> getStatusMessage();
 
     Optional<Date> getLastUpdated();
 

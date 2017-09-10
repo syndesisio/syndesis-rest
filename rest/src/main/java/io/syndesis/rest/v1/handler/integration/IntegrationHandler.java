@@ -42,7 +42,8 @@ import io.syndesis.model.connection.DataShapeKinds;
 import io.syndesis.model.filter.FilterOptions;
 import io.syndesis.model.filter.Op;
 import io.syndesis.model.integration.Integration;
-import io.syndesis.model.integration.Integration.Status;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import io.syndesis.model.integration.Step;
 import io.syndesis.model.validation.AllValidations;
 import io.syndesis.rest.v1.handler.BaseHandler;
@@ -80,8 +81,8 @@ public class IntegrationHandler extends BaseHandler
         Integration integration = Getter.super.get(id);
 
         //fudging the timesUsed for now
-        Optional<Status> currentStatus = integration.getCurrentStatus();
-        if (currentStatus.isPresent() && currentStatus.get() == Integration.Status.Activated) {
+        Optional<IntegrationState> currnetState = integration.getDeployedRevision().map(r -> r.getCurrentState());
+        if (currnetState.isPresent() && currnetState.get() == IntegrationState.Active) {
             return new Integration.Builder()
                     .createFrom(integration)
                     .timesUsed(BigInteger.valueOf(new Date().getTime()/1000000))
@@ -94,14 +95,14 @@ public class IntegrationHandler extends BaseHandler
     @Override
     public Integration create(@ConvertGroup(from = Default.class, to = AllValidations.class) final Integration integration) {
         Date rightNow = new Date();
+
         Integration updatedIntegration = new Integration.Builder()
             .createFrom(integration)
             .token(Tokens.getAuthenticationToken())
-            .statusMessage(Optional.empty())
             .lastUpdated(rightNow)
             .createdDate(rightNow)
-            .currentStatus(determineCurrentStatus(integration))
             .build();
+
         return Creator.super.create(updatedIntegration);
     }
 
@@ -111,7 +112,6 @@ public class IntegrationHandler extends BaseHandler
             .createFrom(integration)
             .token(Tokens.getAuthenticationToken())
             .lastUpdated(new Date())
-            .currentStatus(determineCurrentStatus(integration))
             .build();
 
         Updater.super.update(id, updatedIntegration);
@@ -120,10 +120,10 @@ public class IntegrationHandler extends BaseHandler
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path(value = "/filters/options")
-    public FilterOptions getFilterOptions(Integration integration, @DefaultValue("-1") @QueryParam("position") int position) {
+    public FilterOptions getFilterOptions(IntegrationRevision revision, @DefaultValue("-1") @QueryParam("position") int position) {
         FilterOptions.Builder builder = new FilterOptions.Builder().addOp(Op.DEFAULT_OPTS);
 
-        extractLastOutputDataShapeBeforePosition(integration, position).ifPresent(
+        extractLastOutputDataShapeBeforePosition(revision, position).ifPresent(
             dataShape -> {
                 String kind = dataShape.getKind();
                 if (kind != null && kind.equals(DataShapeKinds.JAVA)) {
@@ -135,8 +135,8 @@ public class IntegrationHandler extends BaseHandler
     }
 
     // position == -1 --> last output datashape in the whole integration
-    private Optional<DataShape> extractLastOutputDataShapeBeforePosition(Integration integration, int position) {
-        List<? extends Step> steps = integration.getSteps().orElse(Collections.emptyList());
+    private Optional<DataShape> extractLastOutputDataShapeBeforePosition(IntegrationRevision revision, int position) {
+        List<? extends Step> steps = revision.getSpec().getSteps();
         Optional<DataShape> lastOutputShape = Optional.empty();
         for (int i = 0; i < steps.size(); i++) {
             if (position != -1 && position == i) {
@@ -158,19 +158,6 @@ public class IntegrationHandler extends BaseHandler
     @Path(value = "/filters/options")
     public FilterOptions getGlobalFilterOptions() {
         return new FilterOptions.Builder().addOp(Op.DEFAULT_OPTS).build();
-    }
-
-    // Determine the current status to 'pending' or 'draft' immediately depending on
-    // the desired stated. This status will be later changed by the activation handlers.
-    // This is not the best place to set but should be done by the IntegrationController
-    // However because of how the Controller works (i.e. that any change to the integration
-    // within the controller will trigger an event again), the initial status must be set
-    // from the outside for the moment.
-    private Integration.Status determineCurrentStatus(Integration integration) {
-        Integration.Status desiredStatus = integration.getDesiredStatus().orElse(Integration.Status.Draft);
-        return desiredStatus == Integration.Status.Draft ?
-            Integration.Status.Draft :
-            Integration.Status.Pending;
     }
 
     @Override

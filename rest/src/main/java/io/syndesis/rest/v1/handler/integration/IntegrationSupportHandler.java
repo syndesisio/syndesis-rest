@@ -15,17 +15,21 @@
  */
 package io.syndesis.rest.v1.handler.integration;
 
-import io.syndesis.model.integration.Integration;
-import io.syndesis.project.converter.ProjectGenerator;
-import io.swagger.annotations.Api;
-import org.springframework.stereotype.Component;
+import java.io.IOException;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
+
+import io.swagger.annotations.Api;
+import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.project.converter.GenerateProjectRequest;
+import io.syndesis.project.converter.ProjectGenerator;
+import org.springframework.stereotype.Component;
 
 @Path("/integration-support")
 @Api(value = "integration-support")
@@ -43,7 +47,17 @@ public class IntegrationSupportHandler {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public byte[] projectPom(Integration integration) throws IOException {
-        return projectConverter.generatePom(integration);
+
+        IntegrationRevision revision = integration.getDeployedRevision()
+            .orElse(integration
+                .getDraftRevision()
+                .orElseThrow(NotFoundException::new));
+
+        return projectConverter.generatePom(new GenerateProjectRequest.Builder()
+                                                .id(integration.getId())
+                                                .name(integration.getName())
+                                                .description(integration.getDescription())
+                                                .spec(revision.getSpec()).build());
     }
 
 }

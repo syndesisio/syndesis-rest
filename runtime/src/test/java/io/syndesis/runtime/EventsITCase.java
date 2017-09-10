@@ -15,6 +15,12 @@
  */
 package io.syndesis.runtime;
 
+import java.net.URI;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.launchdarkly.eventsource.EventHandler;
 import com.launchdarkly.eventsource.EventSource;
@@ -22,6 +28,10 @@ import com.launchdarkly.eventsource.MessageEvent;
 import io.syndesis.model.ChangeEvent;
 import io.syndesis.model.EventMessage;
 import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationRevisionSpec;
+import io.syndesis.model.integration.IntegrationRevisionStatus;
+import io.syndesis.model.integration.IntegrationState;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
@@ -31,13 +41,10 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import java.net.URI;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import static io.syndesis.runtime.Recordings.*;
+import static io.syndesis.runtime.Recordings.Invocation;
+import static io.syndesis.runtime.Recordings.recordedInvocations;
+import static io.syndesis.runtime.Recordings.recorder;
+import static io.syndesis.runtime.Recordings.resetRecorderLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -84,9 +91,11 @@ public class EventsITCase extends BaseITCase {
             Integration integration = new Integration.Builder()
                 .id("1001")
                 .name("test")
-                .desiredStatus(Integration.Status.Draft)
-                .currentStatus(Integration.Status.Draft)
-                .build();
+                .draftRevision(new IntegrationRevision.Builder()
+                    .status(new IntegrationRevisionStatus.Builder().state(IntegrationState.Draft).build())
+                    .spec(new IntegrationRevisionSpec.Builder().state(IntegrationState.Draft).build())
+                    .build()
+                ).build();
             post("/api/v1/integrations", integration, Integration.class);
 
             assertThat(countDownLatch.await(1000, TimeUnit.SECONDS)).isTrue();
@@ -179,8 +188,12 @@ public class EventsITCase extends BaseITCase {
         Integration integration = new Integration.Builder()
             .id("1002")
             .name("test")
-            .desiredStatus(Integration.Status.Draft)
-            .currentStatus(Integration.Status.Draft)
+            .draftRevision(
+                new IntegrationRevision.Builder()
+                    .status(new IntegrationRevisionStatus.Builder().state(IntegrationState.Draft).build())
+                    .spec(new IntegrationRevisionSpec.Builder().state(IntegrationState.Draft).build())
+                    .build()
+            )
             .build();
         post("/api/v1/integrations", integration, Integration.class);
 

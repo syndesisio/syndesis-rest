@@ -18,10 +18,13 @@ package io.syndesis.controllers.integration;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import io.syndesis.model.integration.Integration;
-
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationRevisionStatus;
+import io.syndesis.model.integration.IntegrationState;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
@@ -29,34 +32,45 @@ import org.springframework.stereotype.Component;
 @ConditionalOnProperty(value = "controllers.integration.enabled", havingValue = "false")
 public class DemoHandlerProvider implements StatusChangeHandlerProvider {
 
+       private static final List<StatusChangeHandler> HANDLERS = Arrays.asList(
+            new DemoHandler(IntegrationState.Active, 5000L),
+            new DemoHandler(IntegrationState.Inactive, 5000L),
+            new DemoHandler(IntegrationState.Active, 5000L));
+
+
     @Override
-    public List<StatusChangeHandler> getStatusChangeHandlers() {
-        return Arrays.asList(
-            new DemoHandler(Integration.Status.Activated, 5000L),
-            new DemoHandler(Integration.Status.Deactivated, 5000L),
-            new DemoHandler(Integration.Status.Deleted, 5000L)
-                            );
+    public List<StatusChangeHandler> getDraftStatusChangeHandlers() {
+        return HANDLERS;
+    }
+
+    @Override
+    public List<StatusChangeHandler> getDeployedStatusChangeHandlers() {
+        return HANDLERS;
     }
 
     /* default */ static class DemoHandler implements StatusChangeHandler {
-        private final Integration.Status status;
+        private final IntegrationState state;
         private final long waitMillis;
 
-        /* default */ DemoHandler(Integration.Status status, long waitMillis) {
-            this.status = status;
+        /* default */ DemoHandler(IntegrationState state, long waitMillis) {
+            this.state = state;
             this.waitMillis = waitMillis;
         }
 
-        public Set<Integration.Status> getTriggerStatuses() {
-            return Collections.singleton(status);
+        public Set<IntegrationState> getTriggerStatuses() {
+            return Collections.singleton(state);
         }
 
         @Override
-        public StatusUpdate execute(Integration integration) {
+        public StatusUpdate execute(Integration integration, IntegrationRevision revision) {
+            Optional<IntegrationRevision> deployed = integration.getDeployedRevision();
 
+            Optional<Integer> version = deployed.flatMap(
+                r -> r.getStatus().flatMap(IntegrationRevisionStatus::getVersion));
             try {
                 Thread.sleep(waitMillis);
-                return new StatusUpdate(status);
+
+                return new StatusUpdate(version.orElse(1), state);
             } catch (InterruptedException e) {
                 return null;
             }

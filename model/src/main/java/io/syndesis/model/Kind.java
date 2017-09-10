@@ -34,6 +34,7 @@ public enum Kind {
     Organization(io.syndesis.model.environment.Organization.class),
 
     Integration(io.syndesis.model.integration.Integration.class),
+    IntegrationRevision(io.syndesis.model.integration.IntegrationRevision.class),
     IntegrationRuntime(io.syndesis.model.integration.IntegrationRuntime.class),
     Step(io.syndesis.model.integration.Step.class),
 
@@ -43,7 +44,7 @@ public enum Kind {
     ;
 
     public final String modelName;
-    public final Class<? extends WithId<?>> modelClass;
+    public final Class<? extends WithKind> modelClass;
 
     private static final Map<String, Kind> NAME_MAP;
     private static final Map<Class<?>, Kind> MODEL_MAP;
@@ -60,11 +61,11 @@ public enum Kind {
         MODEL_MAP = Collections.unmodifiableMap(kindByType);
     }
 
-    Kind(Class<? extends WithId<?>> model) {
+    Kind(Class<? extends WithKind> model) {
         this(name(model.getSimpleName()), model);
     }
 
-    Kind(String name, Class<? extends WithId<?>> model) {
+    Kind(String name, Class<? extends WithKind> model) {
         this.modelName = name;
         this.modelClass = model;
     }

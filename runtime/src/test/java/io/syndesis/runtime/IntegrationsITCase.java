@@ -19,11 +19,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
 import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationRevisionSpec;
+import io.syndesis.model.integration.IntegrationRevisionStatus;
+import io.syndesis.model.integration.IntegrationState;
 import io.syndesis.rest.v1.handler.exception.RestError;
 import io.syndesis.rest.v1.operations.Violation;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -71,9 +73,12 @@ public class IntegrationsITCase extends BaseITCase {
         Integration integration = new Integration.Builder()
             .id("2001")
             .name("test")
-            .desiredStatus(Integration.Status.Draft)
-            .currentStatus(Integration.Status.Draft)
-            .build();
+            .draftRevision(
+                new IntegrationRevision.Builder()
+                    .status(new IntegrationRevisionStatus.Builder().state(IntegrationState.Draft).build())
+                    .spec(new IntegrationRevisionSpec.Builder().state(IntegrationState.Draft).build())
+                    .build()
+            ).build();
         post("/api/v1/integrations", integration, Integration.class);
 
         // Validate we can now fetch it.
@@ -84,9 +89,12 @@ public class IntegrationsITCase extends BaseITCase {
         integration = new Integration.Builder()
             .id("2002")
             .name("test2")
-            .desiredStatus(Integration.Status.Draft)
-            .currentStatus(Integration.Status.Draft)
-            .build();
+            .draftRevision(
+                new IntegrationRevision.Builder()
+                    .status(new IntegrationRevisionStatus.Builder().state(IntegrationState.Draft).build())
+                    .spec(new IntegrationRevisionSpec.Builder().state(IntegrationState.Draft).build())
+                    .build()
+            ).build();
         post("/api/v1/integrations", integration, Integration.class);
 
         // Check the we can list the integrations.
@@ -124,7 +132,7 @@ public class IntegrationsITCase extends BaseITCase {
 
     @Test
     public void shouldDetermineValidityForValidIntegrations() {
-        final Integration integration = new Integration.Builder().name("Test integration").desiredStatus(Integration.Status.Draft).build();
+        final Integration integration = new Integration.Builder().name("Test integration").build();
 
         final ResponseEntity<List<Violation>> got = post("/api/v1/integrations/validation", integration, RESPONSE_TYPE,
             tokenRule.validToken(), HttpStatus.NO_CONTENT);

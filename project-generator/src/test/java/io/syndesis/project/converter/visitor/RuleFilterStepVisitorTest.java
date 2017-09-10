@@ -34,7 +34,6 @@ public class RuleFilterStepVisitorTest {
         props.put("rules","[ { \"path\": \"person.name\", \"op\": \"==\", \"value\": \"Ioannis\"}, " +
                           "  { \"path\": \"person.favoriteDrinks\", \"op\": \"contains\", \"value\": \"Gin\" } ]");
         RuleFilterStep step = new RuleFilterStep.Builder()
-            .id("1")
             .configuredProperties(props)
             .build();
 

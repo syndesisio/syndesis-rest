@@ -27,6 +27,7 @@ import io.fabric8.kubernetes.client.RequestConfigBuilder;
 @Value.Immutable
 public interface OpenShiftDeployment {
     String getName();
+    Integer getRevisionNumber();
     Optional<Integer> getReplicas();
     Optional<String> getToken();
     Optional<String> getGitRepository();

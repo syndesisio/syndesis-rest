@@ -28,8 +28,10 @@ import io.syndesis.model.connection.ActionDefinition;
 import io.syndesis.model.connection.DataShape;
 import io.syndesis.model.connection.DataShapeKinds;
 import io.syndesis.model.filter.FilterOptions;
-import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationRevisionSpec;
 import io.syndesis.model.integration.SimpleStep;
+import io.syndesis.model.integration.Step;
 import io.syndesis.rest.v1.handler.integration.IntegrationHandler;
 
 import org.junit.Before;
@@ -60,7 +62,7 @@ public class IntegrationHandlerTest {
     @Test
     public void filterOptionsSimple() {
         when(inspector.getPaths("twitter4j.Status")).thenReturn(Arrays.asList("paramA", "paramB"));
-        Integration integration =
+        IntegrationRevision integration =
             createIntegrationFromDataShapes(dataShape(DataShapeKinds.JAVA, "twitter4j.Status"), null, dataShape(DataShapeKinds.NONE));
 
         FilterOptions options = handler.getFilterOptions(integration, -1);
@@ -71,7 +73,7 @@ public class IntegrationHandlerTest {
     public void filterOptionsMultipleOutputShapes() {
         when(inspector.getPaths("twitter4j.Status")).thenReturn(Arrays.asList("paramA", "paramB"));
         when(inspector.getPaths("blubber.bla")).thenReturn(Arrays.asList("paramY", "paramZ"));
-        Integration integration =
+        IntegrationRevision integration =
             createIntegrationFromDataShapes(dataShape(DataShapeKinds.JAVA, "blubber.bla"),null, dataShape(DataShapeKinds.JAVA, "twitter4j.Status"));
 
         assertThat(handler.getFilterOptions(integration, -1).getPaths())
@@ -83,19 +85,20 @@ public class IntegrationHandlerTest {
 
     @Test
     public void filterOptionsNoOutputShape() {
-        Integration integration =
+        IntegrationRevision integrationRevision =
             createIntegrationFromDataShapes(dataShape(DataShapeKinds.NONE), null);
 
-        FilterOptions options = handler.getFilterOptions(integration, -1);
+        FilterOptions options = handler.getFilterOptions(integrationRevision, -1);
         assertThat(options.getPaths()).isEmpty();
     }
 
-    private Integration createIntegrationFromDataShapes(DataShape... dataShapes) {
-        return new Integration.Builder().steps(steps(dataShapes)).build();
+    private IntegrationRevision createIntegrationFromDataShapes(DataShape... dataShapes) {
+        return new IntegrationRevision.Builder().spec(
+            new IntegrationRevisionSpec.Builder().steps(steps(dataShapes)).build()).build();
     }
 
-    private List<SimpleStep> steps(DataShape ... dataShapes) {
-        List<SimpleStep> ret = new ArrayList<>();
+    private List<Step> steps(DataShape ... dataShapes) {
+        List<Step> ret = new ArrayList<>();
         for (DataShape shape : dataShapes) {
             ActionDefinition.Builder definition = new ActionDefinition.Builder();
             if (shape != null) {
