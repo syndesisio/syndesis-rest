@@ -16,7 +16,6 @@
 package io.syndesis.rest.v1.handler.integration;
 
 import java.math.BigInteger;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
