@@ -18,13 +18,16 @@ package io.syndesis.controllers.integration.online;
 import java.util.Collections;
 import java.util.Set;
 
-import io.syndesis.controllers.integration.StatusChangeHandlerProvider;
+import io.syndesis.controllers.integration.StatusChangeHandler;
+import io.syndesis.controllers.integration.StatusUpdate;
 import io.syndesis.core.Tokens;
 import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import io.syndesis.openshift.OpenShiftDeployment;
 import io.syndesis.openshift.OpenShiftService;
 
-public class DeleteHandler implements StatusChangeHandlerProvider.StatusChangeHandler {
+public class DeleteHandler implements StatusChangeHandler {
 
     private final OpenShiftService openShiftService;
 
@@ -33,27 +36,34 @@ public class DeleteHandler implements StatusChangeHandlerProvider.StatusChangeHa
     }
 
     @Override
-    public Set<Integration.Status> getTriggerStatuses() {
-        return Collections.singleton(Integration.Status.Deleted);
+    public Set<IntegrationState> getTriggerStatuses() {
+        return Collections.singleton(IntegrationState.Undeployed);
     }
 
     @Override
-    public StatusUpdate execute(Integration integration) {
+    public StatusUpdate execute(Integration integration, IntegrationRevision revision) {
+        //It's possible that we delete a draft version that never got deployed. In this case the version will be 0.
+        Integer version = revision.getVersion().orElse(0);
+
+        if (version == 0) {
+            return new StatusUpdate(0, IntegrationState.Undeployed);
+        }
+
         String token = integration.getToken().get();
         Tokens.setAuthenticationToken(token);
 
         OpenShiftDeployment deployment = OpenShiftDeployment
             .builder()
+            .revisionNumber(version)
             .name(integration.getName())
             .token(token)
             .build();
 
-        Integration.Status currentStatus = !openShiftService.exists(deployment)
+        IntegrationState currentStatus = !openShiftService.exists(deployment)
             || openShiftService.delete(deployment)
-            ? Integration.Status.Deleted
-            : Integration.Status.Pending;
+            ? IntegrationState.Undeployed
+            : IntegrationState.Pending;
 
-        return new StatusUpdate(currentStatus);
+        return new StatusUpdate(version, currentStatus);
     }
-
 }

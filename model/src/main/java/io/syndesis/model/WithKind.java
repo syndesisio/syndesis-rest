@@ -17,7 +17,7 @@ package io.syndesis.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public interface WithKind {
+public interface WithKind<T> {
     @JsonIgnore
     Kind getKind();
 }

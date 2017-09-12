@@ -13,36 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.syndesis.model.integration;
 
-import java.util.Map;
-import java.util.Optional;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.syndesis.model.Kind;
-import io.syndesis.model.connection.Action;
-import io.syndesis.model.connection.Connection;
 import org.immutables.value.Value;
 
+/**
+ * An integration revision is a specific version of a certain integration. It belongs to
+ * exactly one integration and has a certain state {@link IntegrationState}
+ */
 @Value.Immutable
-@JsonDeserialize(builder = SimpleStep.Builder.class)
-public interface SimpleStep extends Step {
+@JsonDeserialize(builder = IntegrationRevisionSpec.Builder.class)
+public interface IntegrationRevisionSpec {
 
-    @Override
-    @Value.Default default Kind getKind() {
-        return Kind.Step;
-    }
+    /**
+     * Desired state of this revision
+     */
+    IntegrationState getState();
 
-    Optional<Action> getAction();
+    /**
+     * List of steps which build up this revision. Mandatory field.
+     */
+    List<Step> getSteps();
 
-    Optional<Connection> getConnection();
+    // ============================================================
 
-    String getStepKind();
-
-    Optional<Map<String, String>> getConfiguredProperties();
-
-    String getName();
-
-    class Builder extends ImmutableSimpleStep.Builder { }
+    class Builder extends ImmutableIntegrationRevisionSpec.Builder { }
 
 }

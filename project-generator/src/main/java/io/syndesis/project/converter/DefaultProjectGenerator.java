@@ -27,6 +27,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -42,7 +43,6 @@ import io.syndesis.integration.model.SyndesisHelpers;
 import io.syndesis.integration.model.SyndesisModel;
 import io.syndesis.integration.model.steps.Endpoint;
 import io.syndesis.integration.support.Strings;
-import io.syndesis.model.integration.Integration;
 import io.syndesis.model.integration.Step;
 import io.syndesis.project.converter.ProjectGeneratorProperties.Templates;
 import io.syndesis.project.converter.visitor.GeneratorContext;
@@ -114,14 +114,12 @@ public class DefaultProjectGenerator implements ProjectGenerator {
 
     @Override
     public Map<String, byte[]> generate(GenerateProjectRequest request) throws IOException {
-        request.getIntegration().getSteps().ifPresent(steps -> {
-            for (Step step : steps) {
-                LOG.info("Integration {} : Adding step {} ",
-                         request.getIntegration().getId().orElse("[none]"),
-                         step.getId().orElse(""));
-                step.getAction().ifPresent(action -> connectorCatalog.addConnector(action.getCamelConnectorGAV()));
-            }
-        });
+        for (Step step : request.getSpec().getSteps()) {
+            LOG.info("Integration {} : Adding step {} ",
+                     request.getId().orElse("[none]"),
+                     step.getStepKind());
+            step.getAction().ifPresent(action -> connectorCatalog.addConnector(action.getCamelConnectorGAV()));
+        }
 
         Map<String, byte[]> contents = new HashMap<>();
 
@@ -155,37 +153,32 @@ public class DefaultProjectGenerator implements ProjectGenerator {
         contents.put("src/main/java/io/syndesis/example/Application.java", generateFromRequest(request, applicationJavaMustache));
         contents.put("src/main/resources/application.properties", generateFromRequest(request, applicationPropertiesMustache));
         contents.put("src/main/resources/syndesis.yml", generateFlowYaml(contents, request));
-        contents.put("pom.xml", generatePom(request.getIntegration()));
+        contents.put("pom.xml", generatePom(request));
 
         return contents;
     }
 
     @Override
-    public byte[] generatePom(Integration integration) throws IOException {
+    public byte[] generatePom(GenerateProjectRequest request) throws IOException {
         Set<MavenGav> connectors = new LinkedHashSet<>();
-        integration.getSteps().ifPresent(steps -> {
-            for (Step step : steps) {
-                if (step.getStepKind().equals(Endpoint.KIND)) {
-                    step.getAction().ifPresent(action -> {
-                        String[] splitGav = action.getCamelConnectorGAV().split(":");
-                        if (splitGav.length == 3) {
-                            connectors.add(new MavenGav(splitGav[0], splitGav[1], splitGav[2]));
-                        }
-                    });
-                }
+        for (Step step : request.getSpec().getSteps()) {
+            if (step.getStepKind().equals(Endpoint.KIND)) {
+                step.getAction().ifPresent(action -> {
+                    String[] splitGav = action.getCamelConnectorGAV().split(":");
+                    if (splitGav.length == 3) {
+                        connectors.add(new MavenGav(splitGav[0], splitGav[1], splitGav[2]));
+                    }
+                });
             }
-        });
-        return generateFromPomContext(new PomContext(integration.getId().orElse(""), integration.getName(), integration.getDescription().orElse(null), connectors), pomMustache);
+        }
+        return generateFromPomContext(new PomContext(request.getId().orElse(""), request.getName(), request.getDescription().orElse(null), connectors), pomMustache);
     }
 
     @SuppressWarnings("PMD.UnusedPrivateMethod") // PMD false positive
     private byte[] generateFlowYaml(Map<String, byte[]> contents, GenerateProjectRequest request) throws JsonProcessingException {
         Flow flow = new Flow();
-        request.getIntegration().getSteps().ifPresent(steps -> {
-            if (steps.isEmpty()) {
-                return;
-            }
-
+        List<Step> steps = request.getSpec().getSteps();
+        if (!steps.isEmpty()) {
             Queue<Step> remaining = new LinkedList<>(steps);
             Step first = remaining.remove();
             if (first != null) {
@@ -206,7 +199,7 @@ public class DefaultProjectGenerator implements ProjectGenerator {
 
                 visitStep(generatorContext, stepContext);
             }
-        });
+        }
         SyndesisModel syndesisModel = new SyndesisModel();
         syndesisModel.addFlow(flow);
         return YAML_OBJECT_MAPPER.writeValueAsBytes(syndesisModel);

@@ -23,27 +23,34 @@ import java.util.Set;
 
 import io.syndesis.model.integration.Integration;
 
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
 @ConditionalOnProperty(value = "controllers.integration.enabled", havingValue = "noop")
-public class NoopHandlerProvider implements StatusChangeHandlerProvider.StatusChangeHandler, StatusChangeHandlerProvider {
+public class NoopHandlerProvider implements StatusChangeHandler, StatusChangeHandlerProvider {
 
-    public Set<Integration.Status> getTriggerStatuses() {
+    public Set<IntegrationState> getTriggerStatuses() {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            Integration.Status.Activated,
-            Integration.Status.Deactivated,
-            Integration.Status.Deleted)));
+            IntegrationState.Active,
+            IntegrationState.Inactive,
+            IntegrationState.Undeployed)));
     }
 
     @Override
-    public StatusUpdate execute(Integration integration) {
+    public StatusUpdate execute(Integration integration, IntegrationRevision revision) {
         return null;
     }
 
     @Override
-    public List<StatusChangeHandler> getStatusChangeHandlers() {
+    public List<StatusChangeHandler> getDraftStatusChangeHandlers() {
+        return Collections.singletonList(this);
+    }
+
+    @Override
+    public List<StatusChangeHandler> getDeployedStatusChangeHandlers() {
         return Collections.singletonList(this);
     }
 }

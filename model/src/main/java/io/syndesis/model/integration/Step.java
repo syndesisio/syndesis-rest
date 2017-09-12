@@ -15,18 +15,18 @@
  */
 package io.syndesis.model.integration;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.syndesis.model.Kind;
-import io.syndesis.model.WithId;
-import io.syndesis.model.connection.Action;
-import io.syndesis.model.connection.Connection;
-
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.syndesis.model.Kind;
+import io.syndesis.model.WithKind;
+import io.syndesis.model.connection.Action;
+import io.syndesis.model.connection.Connection;
+
 @JsonDeserialize(using = StepDeserializer.class)
-public interface Step extends WithId<Step>, Serializable {
+public interface Step extends WithKind, Serializable {
 
     @Override
     default Kind getKind() {

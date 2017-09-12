@@ -21,13 +21,16 @@ import java.util.HashSet;
 import java.util.Set;
 
 import io.fabric8.kubernetes.client.KubernetesClientException;
-import io.syndesis.controllers.integration.StatusChangeHandlerProvider;
+import io.syndesis.controllers.integration.StatusChangeHandler;
+import io.syndesis.controllers.integration.StatusUpdate;
 import io.syndesis.core.Tokens;
 import io.syndesis.model.integration.Integration;
+import io.syndesis.model.integration.IntegrationRevision;
+import io.syndesis.model.integration.IntegrationState;
 import io.syndesis.openshift.OpenShiftDeployment;
 import io.syndesis.openshift.OpenShiftService;
 
-public class DeactivateHandler implements StatusChangeHandlerProvider.StatusChangeHandler {
+public class DeactivateHandler implements StatusChangeHandler {
 
 
     private final OpenShiftService openShiftService;
@@ -37,22 +40,27 @@ public class DeactivateHandler implements StatusChangeHandlerProvider.StatusChan
     }
 
     @Override
-    public Set<Integration.Status> getTriggerStatuses() {
+    public Set<IntegrationState> getTriggerStatuses() {
         return Collections.unmodifiableSet(new HashSet<>(Arrays.asList(
-            Integration.Status.Deactivated, Integration.Status.Draft)));
+            IntegrationState.Inactive, IntegrationState.Draft)));
     }
 
     @Override
-    public StatusUpdate execute(Integration integration) {
+    public StatusUpdate execute(Integration integration, IntegrationRevision revision) {
+        Integer version = revision.getVersion().orElseThrow(() -> new IllegalStateException("Deployed IntegrationRevision should have a version"));
+
         String token = integration.getToken().get();
         Tokens.setAuthenticationToken(token);
 
         OpenShiftDeployment deployment = OpenShiftDeployment
             .builder()
+            .revisionNumber(version)
             .name(integration.getName())
             .replicas(0)
             .token(token)
             .build();
+
+
 
         try {
             openShiftService.scale(deployment);
@@ -64,11 +72,11 @@ public class DeactivateHandler implements StatusChangeHandlerProvider.StatusChan
             }
         }
 
-        Integration.Status currentStatus = openShiftService.isScaled(deployment)
-            ? Integration.Status.Deactivated
-                : Integration.Status.Pending;
+        IntegrationState currentStatus = openShiftService.isScaled(deployment)
+            ? IntegrationState.Undeployed
+            : IntegrationState.Pending;
 
-        return new StatusUpdate(currentStatus);
+        return new StatusUpdate(version, currentStatus);
     }
 
 }
