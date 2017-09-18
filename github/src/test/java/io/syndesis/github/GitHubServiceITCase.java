@@ -61,7 +61,7 @@ public class GitHubServiceITCase {
 
     // test project directory
     private static final String PROJECT_DIR = "/sample-github-project";
-    private static final String REPO_NAME = "syndesis-itcase";
+    private static final String REPO_NAME = "syndesis-itcase-" + UUID.randomUUID();
 
     private GitHubClient client;
     private GitHubServiceImpl githubService;
@@ -112,7 +112,13 @@ public class GitHubServiceITCase {
     }
 
     @After
-    public void after() {
+    public void after() throws IOException, InterruptedException {
+
+        //deleting the repo
+        String testRepo = REPO_NAME;
+        User apiUser = githubService.getApiUser();
+        client.delete("/repos/" + apiUser.getLogin() + "/" + testRepo);
+
         SecurityContextHolder.getContext().setAuthentication(null);
 
         if (webserver != null) {
@@ -130,13 +136,19 @@ public class GitHubServiceITCase {
 
     // Requires repo and delete_repo scope
     @Test
-    public void testCreateNewRepository() throws IOException {
-        String testRepo = REPO_NAME + "-create-new";
+    public void testCreateNewRepository() throws IOException, InterruptedException {
+        String testRepo = REPO_NAME;
         Repository repository = githubService.getRepository(testRepo);
-        if (repository != null) {
+        int retryCount = 0;
+        while (repository != null) {
             User apiUser = githubService.getApiUser();
             client.delete("/repos/" + apiUser.getLogin() + "/" + testRepo);
+            this.wait(100l);
             repository = githubService.getRepository(testRepo);
+            retryCount++;
+            if (retryCount > 50) {
+                break; //fail if the repo is still there after 5 seconds
+            }
         }
         Assert.assertNull(repository); // repository should not exist on GitHub
 
