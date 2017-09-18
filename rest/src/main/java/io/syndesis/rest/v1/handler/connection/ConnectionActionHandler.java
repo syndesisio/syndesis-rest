@@ -116,6 +116,14 @@ public class ConnectionActionHandler {
         actionPropertySuggestions.forEach((k, vals) -> enriched.replaceConfigurationProperty(k,
             b -> b.addAllEnum(vals.stream().map(s -> ConfigurationProperty.PropertyValue.Builder.from(s))::iterator)));
 
+        //Setting the defaultValue as suggested by the metadata
+        if (properties != null && !properties.isEmpty()) {
+            String propertyListName = properties.keySet().iterator().next();
+            for (DynamicActionMetadata.ActionPropertySuggestion suggestion : actionPropertySuggestions.get(propertyListName)) {
+                enriched.replaceConfigurationProperty(suggestion.displayValue(), v -> v.defaultValue(suggestion.value()));
+            }
+        }
+
         final Object input = dynamicActionMetadata.inputSchema();
         if (shouldEnrichDataShape(defaultDefinition.getInputDataShape(), input)) {
             enriched.inputDataShape(new DataShape.Builder().type(typeFrom(input)).kind("json-schema")
