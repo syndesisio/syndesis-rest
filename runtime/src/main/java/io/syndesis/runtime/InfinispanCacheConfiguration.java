@@ -29,8 +29,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class InfinispanCacheConfiguration {
 
-	private static CacheManager cacheManager = null;
-	private static EmbeddedCacheManager embeddedCacheManager = null;
+    private static CacheManager cacheManager;
+    private static EmbeddedCacheManager embeddedCacheManager;
 	
     @Value("${cache.max.entries}")
     private int maxEntries;
