@@ -31,31 +31,26 @@ public class InfinispanCacheConfiguration {
 
     private static CacheManager cacheManager;
     private static EmbeddedCacheManager embeddedCacheManager;
-	
+
     @Value("${cache.max.entries}")
     private int maxEntries;
 
     @Bean
     public EmbeddedCacheManager embeddedCacheManager() {
-    	if (embeddedCacheManager==null) {
-    		embeddedCacheManager = new DefaultCacheManager(
-	            new GlobalConfigurationBuilder().nonClusteredDefault()
-	                .globalJmxStatistics().enable()
-	                .defaultCacheName("syndesis-cache")
-	                .build(),
-	            new ConfigurationBuilder().simpleCache(true)
-	                .memory().evictionType(EvictionType.COUNT).size(maxEntries)
-	                .jmxStatistics().enable()
-	                .build()
-	        );
-    	}
-    	return embeddedCacheManager;
+        if (embeddedCacheManager == null) {
+            embeddedCacheManager = new DefaultCacheManager(
+                    new GlobalConfigurationBuilder().nonClusteredDefault().globalJmxStatistics().enable()
+                            .defaultCacheName("syndesis-cache").build(),
+                    new ConfigurationBuilder().simpleCache(true).memory().evictionType(EvictionType.COUNT)
+                            .size(maxEntries).jmxStatistics().enable().build());
+        }
+        return embeddedCacheManager;
     }
 
     @Bean
     public CacheManager cacheManager(final EmbeddedCacheManager nativeCacheManager) {
-        if (cacheManager==null) {
-        	cacheManager = new SpringEmbeddedCacheManager(nativeCacheManager);
+        if (cacheManager == null) {
+            cacheManager = new SpringEmbeddedCacheManager(nativeCacheManager);
         }
         return cacheManager;
     }
