@@ -42,17 +42,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.rules.SpringClassRule;
 import org.springframework.test.context.junit4.rules.SpringMethodRule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = {"client.state.authenticationAlgorithm=HmacSHA1",
-        "client.state.authenticationKey=oNXU5SBpNnU1UI/4ZkUAA2Gzikc=",
-        "client.state.encryptionAlgorithm=AES/CBC/PKCS5Padding", "client.state.encryptionKey=IIAyKXfJTrIvjS6G9dHJLA==",
-        "client.state.tid=1"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
+@ContextConfiguration(classes = { 
+		Application.class,
+        InfinispanCacheConfiguration.class,
+        KeycloakConfiguration.class,
+        StoreConfiguration.class, 
+        SyndesisCorsConfiguration.class
+})
 public abstract class BaseITCase {
 
     @Autowired

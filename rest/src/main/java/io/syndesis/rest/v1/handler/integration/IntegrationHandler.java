@@ -184,6 +184,24 @@ public class IntegrationHandler extends BaseHandler
         Updater.super.update(id, updatedIntegration);
     }
 
+
+    @Override
+    public void delete(String id) {
+         Integration existing = Getter.super.get(id);
+
+        Integration updatedIntegration = new Integration.Builder()
+            .createFrom(existing)
+            .deployedRevisionId(existing.getDeployedRevisionId())
+            .token(Tokens.getAuthenticationToken())
+            .lastUpdated(new Date())
+            .addRevision(IntegrationRevision.fromIntegration(existing))
+            .addRevision(existing.getRevisions().toArray(new IntegrationRevision[existing.getRevisions().size()]))
+            .desiredStatus(Status.Deleted)
+            .build();
+
+        Updater.super.update(id, updatedIntegration);
+    }
+
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Path(value = "/filters/options")
