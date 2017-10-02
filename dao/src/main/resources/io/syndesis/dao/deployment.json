@@ -565,8 +565,7 @@
                "kind": "none"
             },
             "outputDataShape": {
-               "kind": "java",
-               "type": "io.syndesis.connector.salesforce.SalesforceIdentifier"
+               "kind": "json-schema"
             },
             "propertyDefinitionSteps": [{
               "name": "Name of the object",
@@ -601,8 +600,7 @@
                "kind": "none"
             },
             "outputDataShape": {
-               "kind": "java",
-               "type": "io.syndesis.connector.salesforce.SalesforceIdentifier"
+               "kind": "json-schema"
             },
             "propertyDefinitionSteps": [{
               "name": "Name of the object",
