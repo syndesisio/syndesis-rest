@@ -26,7 +26,7 @@
 
   <groupId>io.syndesis</groupId>
   <artifactId>syndesis-rest-parent</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.0.fuse-000001</version>
   <packaging>pom</packaging>
   <name>Syndesis REST :: Parent</name>
 
@@ -156,14 +156,14 @@
     <spring.version>4.3.10.RELEASE</spring.version>
     <spring-boot.version>1.5.6.RELEASE</spring-boot.version>
     <spring-cloud.version>Dalston.SR2</spring-cloud.version>
-    <spring-cloud-kubernetes.version>0.1.6</spring-cloud-kubernetes.version>
+    <spring-cloud-kubernetes.version>0.1.0.fuse-000070</spring-cloud-kubernetes.version>
     <spring-cloud-sleuth.version>1.2.2.RELEASE</spring-cloud-sleuth.version>
     <spring-security.version>4.2.3.RELEASE</spring-security.version>
     <spring-social.version>1.1.4.RELEASE</spring-social.version>
     <swagger.version>1.5.12</swagger.version>
     <undertow.version>1.4.18.Final</undertow.version>
-    <atlasmap.version>1.17.0</atlasmap.version>
-    <camel-atlasmap.version>1.30.0</camel-atlasmap.version>
+    <atlasmap.version>1.30.0.fuse-000006</atlasmap.version>
+    <camel-atlasmap.version>1.30.0.fuse-000004</camel-atlasmap.version>
     <apache-mime4j.version>0.6</apache-mime4j.version>
 
     <!-- maven plugin version -->
