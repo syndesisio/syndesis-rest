@@ -759,6 +759,12 @@
         <artifactId>wiremock-standalone</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.syndesis</groupId>
+      <artifactId>test-support</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <profiles>

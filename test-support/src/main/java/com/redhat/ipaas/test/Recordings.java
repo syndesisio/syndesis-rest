@@ -13,17 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.syndesis.runtime;
+package com.redhat.ipaas.test;
 
-import java.lang.reflect.*;
+import net.sf.cglib.proxy.Enhancer;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-
-import javax.annotation.Nonnull;
-
-import org.springframework.cglib.proxy.Enhancer;
 
 /**
  * This class allows you to proxy other objects and record all
@@ -38,7 +39,7 @@ public class Recordings {
         private Object result;
         private Throwable error;
 
-        public Invocation(@Nonnull Method method, Object[] args) {
+        public Invocation(Method method, Object[] args) {
             this.method = method;
             this.args = args;
         }
@@ -62,15 +63,15 @@ public class Recordings {
 
     public static class RecordingInvocationHandler implements InvocationHandler {
         private final Object target;
-        private final List<Invocation> recordedInvocations = Collections.synchronizedList(new ArrayList<>());
-        private volatile CountDownLatch latch = new CountDownLatch(1);
+        protected final List<Invocation> recordedInvocations = Collections.synchronizedList(new ArrayList<>());
+        protected volatile CountDownLatch latch = new CountDownLatch(1);
 
         public RecordingInvocationHandler(Object target) {
             this.target = target;
         }
 
         @Override
-        public synchronized Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
             if (method.getName().equals("getInvocationHandler$$$")) {
                 RecordingInvocationHandler rc = this;
@@ -102,49 +103,29 @@ public class Recordings {
 
     public interface RecordingProxy {
         // Use a weird method name to avoid conflicts with other methods the proxied class might declare.
-        RecordingInvocationHandler getInvocationHandler$$$();
+        public RecordingInvocationHandler getInvocationHandler$$$();
     }
 
-    static public <T> T recorder(Object object, Class<T> as) {
+    static public <T> Recorder<T> recorder(Object object, Class<T> as) {
+        RecordingInvocationHandler ih = new RecordingInvocationHandler(object);
+        T proxy = null;
         if (as.isInterface()) {
             // If it's just an interface, use standard java reflect proxying
-            return as.cast(Proxy.newProxyInstance(as.getClassLoader(), new Class[]{as}, new RecordingInvocationHandler(object)));
-        }
-
-        // If it's a class then use gclib to implement a subclass to implement proxying
-        RecordingInvocationHandler ih = new RecordingInvocationHandler(object);
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(as);
-        enhancer.setInterfaces(new Class[]{RecordingProxy.class});
-        enhancer.setCallback(new org.springframework.cglib.proxy.InvocationHandler() {
-            @Override
-            public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
-                return ih.invoke(o, method, objects);
-            }
-        });
-        return as.cast(enhancer.create());
-    }
-
-    static public CountDownLatch resetRecorderLatch(Object object, int count) {
-        RecordingInvocationHandler ih = null;
-        if (object instanceof RecordingProxy) {
-            ih = ((RecordingProxy) object).getInvocationHandler$$$();
+            proxy = as.cast(Proxy.newProxyInstance(as.getClassLoader(), new Class[]{as}, ih));
         } else {
-            ih = (RecordingInvocationHandler) Proxy.getInvocationHandler(object);
+            // If it's a class then use gclib to implement a subclass to implement proxying
+            Enhancer enhancer = new Enhancer();
+            enhancer.setSuperclass(as);
+            enhancer.setInterfaces(new Class[]{RecordingProxy.class});
+            enhancer.setCallback(new net.sf.cglib.proxy.InvocationHandler() {
+                @Override
+                public Object invoke(Object o, Method method, Object[] objects) throws Throwable {
+                    return ih.invoke(o, method, objects);
+                }
+            });
+            proxy = as.cast(enhancer.create());
         }
-        CountDownLatch latch = new CountDownLatch(count);
-        ih.latch = latch;
-        return latch;
-    }
-
-    static public List<Invocation> recordedInvocations(Object object) {
-        RecordingInvocationHandler ih = null;
-        if (object instanceof RecordingProxy) {
-            ih = ((RecordingProxy) object).getInvocationHandler$$$();
-        } else {
-            ih = (RecordingInvocationHandler) Proxy.getInvocationHandler(object);
-        }
-        return ih.recordedInvocations;
+        return new Recorder<T>(ih, proxy);
     }
 
 

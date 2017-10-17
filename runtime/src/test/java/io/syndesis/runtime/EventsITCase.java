@@ -19,9 +19,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.launchdarkly.eventsource.EventHandler;
 import com.launchdarkly.eventsource.EventSource;
 import com.launchdarkly.eventsource.MessageEvent;
+import com.redhat.ipaas.test.Recorder;
 import io.syndesis.model.ChangeEvent;
 import io.syndesis.model.EventMessage;
 import io.syndesis.model.integration.Integration;
+import io.syndesis.runtime.BaseITCase;
+import io.syndesis.runtime.EventBusToServerSentEvents;
+import io.syndesis.runtime.EventBusToWebSocket;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.WebSocket;
@@ -32,12 +36,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import static io.syndesis.runtime.Recordings.*;
+import static com.redhat.ipaas.test.Recordings.recorder;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -56,57 +58,34 @@ public class EventsITCase extends BaseITCase {
         URI uri = resolveURI(EventBusToServerSentEvents.DEFAULT_PATH + "/" + uuid);
 
         // lets setup an event handler that we can inspect events on..
-        EventHandler handler = recorder(mock(EventHandler.class), EventHandler.class);
-        List<Recordings.Invocation> invocations = recordedInvocations(handler);
-        CountDownLatch countDownLatch = resetRecorderLatch(handler, 2);
+        Recorder<EventHandler> r = recorder(mock(EventHandler.class), EventHandler.class);recorder(mock(EventHandler.class), EventHandler.class);
+        r.reset(2);
 
-        try (EventSource eventSource = new EventSource.Builder(handler, uri).build()) {
-            eventSource.start();
+        EventSource eventSource = new EventSource.Builder(r.proxy(), uri).build();
+        eventSource.start();
 
-            assertThat(countDownLatch.await(1000, TimeUnit.SECONDS)).isTrue();
+        assertThat(r.await(1000, TimeUnit.SECONDS)).isTrue();
+        assertThat(r.invocations().get(0).getMethod().getName()).isEqualTo("onOpen");
 
-            // workaround issues in EventSource
-            reorderEventSourceInvocations(invocations);
+        // We auto get a message letting us know we connected.
+        assertThat(r.invocations().get(1).getMethod().getName()).isEqualTo("onMessage");
+        assertThat(r.invocations().get(1).getArgs()[0]).isEqualTo("message");
+        assertThat(((MessageEvent) r.invocations().get(1).getArgs()[1]).getData()).isEqualTo("connected");
 
-            assertThat(invocations.get(0).getMethod().getName()).isEqualTo("onOpen");
+        /////////////////////////////////////////////////////
+        // Test that we get notified of created entities
+        /////////////////////////////////////////////////////
+        r.reset(1);
 
-            // We auto get a message letting us know we connected.
-            assertThat(invocations.get(1).getMethod().getName()).isEqualTo("onMessage");
-            assertThat(invocations.get(1).getArgs()[0]).isEqualTo("message");
-            assertThat(((MessageEvent) invocations.get(1).getArgs()[1]).getData()).isEqualTo("connected");
+        Integration integration = new Integration.Builder().id("1001").name("test").build();
+        post("/api/v1/integrations", integration, Integration.class);
 
-            /////////////////////////////////////////////////////
-            // Test that we get notified of created entities
-            /////////////////////////////////////////////////////
-            invocations.clear();
-            countDownLatch = resetRecorderLatch(handler, 1);
+        assertThat(r.await(1000, TimeUnit.SECONDS)).isTrue();
+        assertThat(r.invocations().get(0).getArgs()[0]).isEqualTo("change-event");
+        assertThat(((MessageEvent) r.invocations().get(0).getArgs()[1]).getData())
+            .isEqualTo(ChangeEvent.of("created", "integration", "1001").toJson());
 
-            Integration integration = new Integration.Builder()
-                .id("1001")
-                .name("test")
-                .desiredStatus(Integration.Status.Draft)
-                .currentStatus(Integration.Status.Draft)
-                .build();
-            post("/api/v1/integrations", integration, Integration.class);
-
-            assertThat(countDownLatch.await(1000, TimeUnit.SECONDS)).isTrue();
-            assertThat(invocations.get(0).getArgs()[0]).isEqualTo("change-event");
-            assertThat(((MessageEvent) invocations.get(0).getArgs()[1]).getData())
-                .isEqualTo(ChangeEvent.of("created", "integration", "1001").toJson());
-        }
-    }
-
-
-    private void reorderEventSourceInvocations(List<Invocation> invocations) {
-        // The EventSource is using a thread pool to emmit events.. so we get non-deterministic results.
-        // lets reorder stuff so that the onOpen is the first event.
-        for (int i = 1; i < invocations.size(); i++) {
-            Invocation invocation = invocations.get(i);
-            if( invocation.getMethod().getName().equals("onOpen") ) {
-                invocations.remove(i);
-                invocations.add(0, invocation);
-            }
-        }
+        eventSource.close();
     }
 
     private URI resolveURI(String uriTemplate) {
@@ -120,24 +99,25 @@ public class EventsITCase extends BaseITCase {
         // {"timestamp":1490099424012,"status":401,"error":"Unauthorized","message":"Unauthorized","path":"/api/v1/event/reservations"}
 
         ResponseEntity<JsonNode> response = restTemplate().postForEntity("/api/v1/event/reservations", null, JsonNode.class);
-        assertThat(response.getStatusCode()).as("reservations post status code").isEqualTo(HttpStatus.FORBIDDEN);
+        assertThat(response.getStatusCode()).as("reservations post status code").isEqualTo(HttpStatus.UNAUTHORIZED);
 
         // lets setup an event handler that we can inspect events on..
-        EventHandler handler = recorder(mock(EventHandler.class), EventHandler.class);
-        List<Recordings.Invocation> invocations = recordedInvocations(handler);
-        CountDownLatch countDownLatch = resetRecorderLatch(handler, 1);
+        Recorder<EventHandler> r = recorder(mock(EventHandler.class), EventHandler.class);
+        r.reset(1);
 
         // Using a random uuid should not work either.
         String uuid = UUID.randomUUID().toString();
         URI uri = resolveURI(EventBusToServerSentEvents.DEFAULT_PATH + "/" + uuid);
-        try (EventSource eventSource = new EventSource.Builder(handler, uri).build()) {
-            eventSource.start();
+        EventSource eventSource = new EventSource.Builder(r.proxy(), uri).build();
+        eventSource.start();
 
-            assertThat(countDownLatch.await(1000, TimeUnit.SECONDS)).isTrue();
-            assertThat(invocations.get(0).getMethod().getName()).isEqualTo("onError");
-            assertThat(invocations.get(0).getArgs()[0].toString())
-                .isEqualTo("com.launchdarkly.eventsource.UnsuccessfulResponseException: Unsuccessful response code received from stream: 404");
-        }
+        assertThat(r.await(1000, TimeUnit.SECONDS)).isTrue();
+        assertThat(r.invocations().get(0).getMethod().getName()).isEqualTo("onError");
+        assertThat(r.invocations().get(0).getArgs()[0].toString())
+            .isEqualTo("com.launchdarkly.eventsource.UnsuccessfulResponseException: Unsuccessful response code received from stream: 404");
+
+        eventSource.close();
+
     }
 
     @Test
@@ -158,35 +138,28 @@ public class EventsITCase extends BaseITCase {
             .build();
 
         // lets setup an event handler that we can inspect events on..
-        WebSocketListener listener = recorder(mock(WebSocketListener.class), WebSocketListener.class);
-        List<Recordings.Invocation> invocations = recordedInvocations(listener);
-        CountDownLatch countDownLatch = resetRecorderLatch(listener, 2);
+        Recorder<WebSocketListener> r = recorder(mock(WebSocketListener.class), WebSocketListener.class);
+        r.reset(2);
 
-        WebSocket ws = client.newWebSocket(request, listener);
+        WebSocket ws = client.newWebSocket(request, r.proxy());
 
         // We auto get a message letting us know we connected.
-        assertThat(countDownLatch.await(1000, TimeUnit.SECONDS)).isTrue();
-        assertThat(invocations.get(0).getMethod().getName()).isEqualTo("onOpen");
-        assertThat(invocations.get(1).getMethod().getName()).isEqualTo("onMessage");
-        assertThat(invocations.get(1).getArgs()[1]).isEqualTo(EventMessage.of("message", "connected").toJson());
+        assertThat(r.await(1000, TimeUnit.SECONDS)).isTrue();
+        assertThat(r.invocations().get(0).getMethod().getName()).isEqualTo("onOpen");
+        assertThat(r.invocations().get(1).getMethod().getName()).isEqualTo("onMessage");
+        assertThat(r.invocations().get(1).getArgs()[1]).isEqualTo(EventMessage.of("message", "connected").toJson());
 
         /////////////////////////////////////////////////////
         // Test that we get notified of created entities
         /////////////////////////////////////////////////////
-        invocations.clear();
-        countDownLatch = resetRecorderLatch(listener, 1);
+        r.reset(1);
 
-        Integration integration = new Integration.Builder()
-            .id("1002")
-            .name("test")
-            .desiredStatus(Integration.Status.Draft)
-            .currentStatus(Integration.Status.Draft)
-            .build();
+        Integration integration = new Integration.Builder().id("1002").name("test").build();
         post("/api/v1/integrations", integration, Integration.class);
 
-        assertThat(countDownLatch.await(1000, TimeUnit.SECONDS)).isTrue();
-        assertThat(invocations.get(0).getMethod().getName()).isEqualTo("onMessage");
-        assertThat(invocations.get(0).getArgs()[1]).isEqualTo(EventMessage.of("change-event", ChangeEvent.of("created", "integration", "1002").toJson()).toJson());
+        assertThat(r.await(1000, TimeUnit.SECONDS)).isTrue();
+        assertThat(r.invocations().get(0).getMethod().getName()).isEqualTo("onMessage");
+        assertThat(r.invocations().get(0).getArgs()[1]).isEqualTo(EventMessage.of("change-event", ChangeEvent.of("created", "integration", "1002").toJson()).toJson());
 
         ws.close(1000, "closing");
     }
@@ -204,16 +177,15 @@ public class EventsITCase extends BaseITCase {
         Request request = new Request.Builder().url(url).build();
 
         // lets setup an event handler that we can inspect events on..
-        WebSocketListener listener = recorder(mock(WebSocketListener.class), WebSocketListener.class);
-        List<Recordings.Invocation> invocations = recordedInvocations(listener);
-        CountDownLatch countDownLatch = resetRecorderLatch(listener, 1);
+        Recorder<WebSocketListener> r = recorder(mock(WebSocketListener.class), WebSocketListener.class);
+        r.reset(1);
 
-        WebSocket ws = client.newWebSocket(request, listener);
+        WebSocket ws = client.newWebSocket(request, r.proxy());
 
         // We auto get a message letting us know we connected.
-        assertThat(countDownLatch.await(1000, TimeUnit.SECONDS)).isTrue();
-        assertThat(invocations.get(0).getMethod().getName()).isEqualTo("onFailure");
-        assertThat(invocations.get(0).getArgs()[1].toString())
+        assertThat(r.await(1000, TimeUnit.SECONDS)).isTrue();
+        assertThat(r.invocations().get(0).getMethod().getName()).isEqualTo("onFailure");
+        assertThat(r.invocations().get(0).getArgs()[1].toString())
             .isEqualTo("java.net.ProtocolException: Expected HTTP 101 response but was '404 Not Found'");
 
         ws.close(1000, "closing");

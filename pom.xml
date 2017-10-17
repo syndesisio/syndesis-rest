@@ -136,6 +136,7 @@
     <module>credential</module>
     <module>dao</module>
     <module>jsondb</module>
+    <module>leases</module>
     <module>model</module>
     <module>model2</module>
     <module>openshift</module>
@@ -143,6 +144,7 @@
     <module>rest</module>
     <module>syndesis-maven-plugin</module>
     <module>runtime</module>
+    <module>test-support</module>
     <module>verifier</module>
     <module>inspector</module>
     <module>syndesis-builder-image-generator</module>
@@ -225,6 +227,18 @@
       <dependency>
         <groupId>io.syndesis</groupId>
         <artifactId>dao</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.syndesis</groupId>
+        <artifactId>leases</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>io.syndesis</groupId>
+        <artifactId>test-support</artifactId>
         <version>${project.version}</version>
       </dependency>
 
