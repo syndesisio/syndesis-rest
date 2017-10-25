@@ -235,6 +235,25 @@ public class SqlFileStoreTest {
         }
     }
 
+    @Test
+    public void testMultipleInitAreIdempotent() throws IOException {
+        fileStore.init();
+        fileStore.init();
+        fileStore.init();
+        fileStore.init();
+        assertNull(fileStore.read("/not-exists"));
+    }
+
+    @Test
+    public void testMultipleDestroyAreIdempotent() throws IOException {
+        fileStore.destroy();
+        fileStore.destroy();
+        fileStore.destroy();
+        fileStore.destroy();
+        fileStore.init();
+        assertNull(fileStore.read("/not-exists"));
+    }
+
     private <T> void expectInvalidPath(Callable<T> callable) {
         assertNotNull(callable);
         try {

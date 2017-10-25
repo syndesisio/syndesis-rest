@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.sql.Blob;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -63,20 +65,24 @@ public class SqlFileStore implements FileStore {
 
     @Override
     public void init() {
-        try {
-            dbi.useHandle(h -> {
-                if (databaseKind == DatabaseKind.PostgreSQL) {
-                    h.execute("CREATE TABLE filestore (path VARCHAR COLLATE \"C\" PRIMARY KEY, data OID)");
-                } else if (databaseKind == DatabaseKind.H2) {
-                    h.execute("CREATE TABLE filestore (path VARCHAR PRIMARY KEY, data BLOB)");
-                } else if (databaseKind == DatabaseKind.DERBY) {
-                    h.execute("CREATE TABLE filestore (path VARCHAR(1000), data BLOB, PRIMARY KEY (path))");
-                } else {
-                    throw new FileStoreException("Unsupported database kind: " + databaseKind);
-                }
-            });
-        } catch (CallbackFailedException ex) {
-            throw new FileStoreException("Unable to initialize the filestore", ex);
+        boolean needsInitialization = !dbi.inTransaction((h, s) -> tableExists(h, "filestore"));
+
+        if (needsInitialization) {
+            try {
+                dbi.useHandle(h -> {
+                    if (databaseKind == DatabaseKind.PostgreSQL) {
+                        h.execute("CREATE TABLE filestore (path VARCHAR COLLATE \"C\" PRIMARY KEY, data OID)");
+                    } else if (databaseKind == DatabaseKind.H2) {
+                        h.execute("CREATE TABLE filestore (path VARCHAR PRIMARY KEY, data BLOB)");
+                    } else if (databaseKind == DatabaseKind.DERBY) {
+                        h.execute("CREATE TABLE filestore (path VARCHAR(1000), data BLOB, PRIMARY KEY (path))");
+                    } else {
+                        throw new FileStoreException("Unsupported database kind: " + databaseKind);
+                    }
+                });
+            } catch (CallbackFailedException ex) {
+                throw new FileStoreException("Unable to initialize the filestore", ex);
+            }
         }
     }
 
@@ -308,6 +314,29 @@ public class SqlFileStore implements FileStore {
     private String newRandomTempFilePath() {
         SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd-HH-mm", Locale.ROOT);
         return "/tmp/" + fmt.format(new Date()) + "_" + UUID.randomUUID();
+    }
+
+    private boolean tableExists(Handle h, String tableName) {
+        try {
+            String tableToCheck = tableName;
+            boolean caseSensitive = this.databaseKind == DatabaseKind.PostgreSQL;
+            if (!caseSensitive) {
+                tableToCheck = tableName.toUpperCase();
+            }
+            DatabaseMetaData metaData = h.getConnection().getMetaData();
+
+            try (ResultSet rs = metaData.getTables(null, null, tableToCheck, null)) {
+                while (rs.next()) {
+                    String foundTable = rs.getString("TABLE_NAME");
+                    if (tableToCheck.equalsIgnoreCase(foundTable)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (SQLException ex) {
+            throw FileStoreException.launderThrowable("Cannot check if the table " + tableName + " already exists", ex);
+        }
     }
 
     /**
