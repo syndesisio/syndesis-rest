@@ -18,6 +18,7 @@ package io.syndesis.filestore.impl;
 import io.syndesis.filestore.FileStore;
 import io.syndesis.filestore.FileStoreException;
 import org.apache.commons.io.IOUtils;
+import org.postgresql.PGConnection;
 import org.postgresql.largeobject.LargeObject;
 import org.postgresql.largeobject.LargeObjectManager;
 import org.skife.jdbi.v2.DBI;
@@ -193,7 +194,7 @@ public class SqlFileStore implements FileStore {
     private void doWritePostgres(Handle h, String path, InputStream file) {
         doDelete(h, path);
         try {
-            LargeObjectManager lobj = ((org.postgresql.PGConnection) h.getConnection()).getLargeObjectAPI();
+            LargeObjectManager lobj = h.getConnection().unwrap(PGConnection.class).getLargeObjectAPI();
             long oid = lobj.createLO();
             LargeObject obj = lobj.open(oid, LargeObjectManager.WRITE);
             try (OutputStream lob = obj.getOutputStream()) {
@@ -293,7 +294,7 @@ public class SqlFileStore implements FileStore {
                 .findFirst();
 
             if (oid.isPresent()) {
-                LargeObjectManager lobj = ((org.postgresql.PGConnection) h.getConnection()).getLargeObjectAPI();
+                LargeObjectManager lobj = h.getConnection().unwrap(PGConnection.class).getLargeObjectAPI();
                 LargeObject obj = lobj.open(oid.get(), LargeObjectManager.READ);
                 return new HandleCloserInputStream(h, obj.getInputStream());
             } else {
