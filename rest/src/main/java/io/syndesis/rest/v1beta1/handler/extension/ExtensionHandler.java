@@ -1,12 +1,12 @@
 /**
  * Copyright (C) 2016 Red Hat, Inc.
- * <p>
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * <p>
- * http://www.apache.org/licenses/LICENSE-2.0
- * <p>
+ *
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,6 +16,7 @@
 package io.syndesis.rest.v1beta1.handler.extension;
 
 import io.swagger.annotations.Api;
+import io.syndesis.core.KeyGenerator;
 import io.syndesis.core.SyndesisServerException;
 import io.syndesis.dao.manager.DataManager;
 import io.syndesis.filestore.FileStore;
@@ -65,16 +66,33 @@ public class ExtensionHandler extends BaseHandler implements Lister<Extension>, 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @SuppressWarnings("PMD.EmptyCatchBlock")
     public Extension upload(@Context SecurityContext sec, MultipartFormDataInput dataInput) {
 
-        String tempLocation = storeFile(dataInput);
-        Extension embeddedExtension = getExtension(tempLocation);
+        String id = KeyGenerator.createKey();
+        String fileLocation = "/extensions/" + id;
 
-        Extension extension = getDataManager().create(embeddedExtension);
+        try {
+            storeFile(fileLocation, dataInput);
 
-        String id = extension.getId().orElseThrow(() -> new IllegalStateException("Id not set"));
-        fileStore.move(tempLocation, "/extensions/" + id);
-        return extension;
+            Extension embeddedExtension = extractExtension(fileLocation);
+
+            Extension extension = new Extension.Builder()
+                .createFrom(embeddedExtension)
+                .id(id)
+                .build();
+
+            // TODO: VALIDATE
+
+            return getDataManager().create(extension);
+        } catch (@SuppressWarnings("PMD.AvoidCatchingGenericException") Exception ex) {
+            try {
+                delete(id);
+            } catch (@SuppressWarnings("PMD.AvoidCatchingGenericException") Exception dex) {
+                // ignore
+            }
+            throw SyndesisServerException.launderThrowable(ex);
+        }
     }
 
     @Override
@@ -86,7 +104,7 @@ public class ExtensionHandler extends BaseHandler implements Lister<Extension>, 
     // ===============================================================
 
     @Nonnull
-    private Extension getExtension(String location) {
+    private Extension extractExtension(String location) {
         try (InputStream file = fileStore.read(location)) {
             return extensionAnalyzer.analyze(file);
         } catch (IOException ex) {
@@ -95,15 +113,13 @@ public class ExtensionHandler extends BaseHandler implements Lister<Extension>, 
         }
     }
 
-    private String storeFile(MultipartFormDataInput dataInput) {
+    private void storeFile(String location, MultipartFormDataInput dataInput) {
         // Store the artifact into the filestore
-        String tempLocation;
         try (InputStream file = getBinaryArtifact(dataInput)) {
-            tempLocation = fileStore.writeTemporaryFile(file);
+            fileStore.write(location, file);
         } catch (IOException ex) {
             throw SyndesisServerException.launderThrowable("Unable to store the file into the filestore", ex);
         }
-        return tempLocation;
     }
 
     @Nonnull

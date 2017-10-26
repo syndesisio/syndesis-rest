@@ -65,15 +65,15 @@ public class SqlFileStoreTest {
 //        postgresDs.setPassword("password");
 
         return Arrays.asList(new Object[][]{
-            {derbyDs, SqlFileStore.DatabaseKind.DERBY},
-//            {postgresDs, SqlFileStore.DatabaseKind.PostgreSQL},
-            {h2Ds, SqlFileStore.DatabaseKind.H2},
+            {derbyDs},
+//            {postgresDs},
+            {h2Ds}
         });
     }
 
-    public SqlFileStoreTest(DataSource ds, SqlFileStore.DatabaseKind kind) throws Exception {
+    public SqlFileStoreTest(DataSource ds) throws Exception {
         DBI dbi = new DBI(ds);
-        this.fileStore = new SqlFileStore(dbi, kind);
+        this.fileStore = new SqlFileStore(dbi);
         this.fileStore.destroy();
         this.fileStore.init();
     }
