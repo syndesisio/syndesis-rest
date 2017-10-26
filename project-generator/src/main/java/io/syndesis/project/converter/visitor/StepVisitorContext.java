@@ -29,6 +29,8 @@ import org.immutables.value.Value;
 @JsonDeserialize(builder = StepVisitorContext.Builder.class)
 public interface StepVisitorContext extends Iterator<StepVisitorContext> {
 
+    GeneratorContext getGeneratorContext();
+
     int getIndex();
 
     Step getStep();

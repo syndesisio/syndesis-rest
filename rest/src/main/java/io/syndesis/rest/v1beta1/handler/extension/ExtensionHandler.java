@@ -20,8 +20,8 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.syndesis.core.KeyGenerator;
 import io.syndesis.core.SyndesisServerException;
+import io.syndesis.dao.extension.ExtensionDataAccessObject;
 import io.syndesis.dao.manager.DataManager;
-import io.syndesis.filestore.FileStore;
 import io.syndesis.model.Kind;
 import io.syndesis.model.ResourceIdentifier;
 import io.syndesis.model.extension.Extension;
@@ -66,13 +66,13 @@ import java.util.stream.Collectors;
 @Component
 public class ExtensionHandler extends BaseHandler implements Lister<Extension>, Getter<Extension>, Deleter<Extension> {
 
-    private final FileStore fileStore;
+    private final ExtensionDataAccessObject fileStore;
 
     private final ExtensionAnalyzer extensionAnalyzer;
 
     private final Validator validator;
 
-    public ExtensionHandler(final DataManager dataMgr, final FileStore fileStore,
+    public ExtensionHandler(final DataManager dataMgr, final ExtensionDataAccessObject fileStore,
                             final ExtensionAnalyzer extensionAnalyzer, final Validator validator) {
         super(dataMgr);
         this.fileStore = fileStore;

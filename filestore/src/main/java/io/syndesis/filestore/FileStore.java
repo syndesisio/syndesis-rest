@@ -15,71 +15,7 @@
  */
 package io.syndesis.filestore;
 
-import java.io.InputStream;
+import io.syndesis.dao.extension.ExtensionDataAccessObject;
 
-public interface FileStore {
-
-    /**
-     * Initialize the file store.
-     */
-    void init();
-
-    /**
-     * Write a file on a path.
-     *
-     * The path must be absolute (e.g. "/path/to/file.zip").
-     *
-     * If a file already exists it is overwritten.
-     * Parent directories are created automatically.
-     *
-     * @param path the destination path
-     * @param file the content of the file
-     */
-    void write(String path, InputStream file);
-
-    /**
-     * Write a file on a temporary path.
-     *
-     * The path wil be decided by the file store and returned to the client.
-     *
-     * @param file the content of the file
-     * @return the path created for the file
-     */
-    String writeTemporaryFile(InputStream file);
-
-    /**
-     * Read a file from a path.
-     *
-     * The path must be absolute (e.g. "/path/to/file.zip").
-     *
-     * @param path the path to read
-     * @return the file content or null if the file is not present
-     */
-    InputStream read(String path);
-
-    /**
-     * Delete a file corresponding to a path.
-     *
-     * The path must be absolute (e.g. "/path/to/file.zip").
-     *
-     * @param path the path to the file to delete
-     * @return true if the file existed before deleting
-     */
-    boolean delete(String path);
-
-    /**
-     * Moves a file from a source path to a destination path.
-     *
-     * Both paths must be absolute (e.g. "/path/to/file.zip").
-     *
-     * If a file already exists in the destination path, it is overwritten.
-     * If the source file does not exist, the operation is cancelled and the
-     * destination file (if present) is left unchanged.
-     *
-     * @param fromPath the source path
-     * @param toPath the destination path
-     * @return true if the source file existed before moving it
-     */
-    boolean move(String fromPath, String toPath);
-
+public interface FileStore extends ExtensionDataAccessObject {
 }

@@ -136,7 +136,7 @@ public class SyndesisExtensionActionProcessor extends AbstractProcessor {
 
         if (beanAnnotationClass != null && element.getAnnotation(beanAnnotationClass) != null) {
             if (types.isAssignable(returnType, routeBuilderElement.asType()) || types.isAssignable(returnType, routeDefinitionElement.asType())) {
-                props.put("kind", "ROUTE");
+                props.put("kind", "ENDPOINT");
             }
         } else {
             if (routeBuilderElement == null || routeDefinitionElement == null) {

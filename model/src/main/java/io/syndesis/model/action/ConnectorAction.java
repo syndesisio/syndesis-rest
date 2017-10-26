@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2016 Red Hat, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.syndesis.model.connection;
+package io.syndesis.model.action;
 
-/**
- */
-public class DataShapeKinds {
-    public static final String ANY = "any";
-    public static final String JAVA = "java";
-    public static final String JSON_SCHEMA = "json-schema";
-    public static final String NONE = "none";
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import io.syndesis.model.WithId;
+import org.immutables.value.Value;
+
+@Value.Immutable
+@JsonDeserialize(builder = ConnectorAction.Builder.class)
+public interface ConnectorAction extends Action<ConnectorDescriptor>, WithId<ConnectorAction> {
+    @Override
+    default ConnectorAction withId(String id) {
+        return new Builder().createFrom(this).id(id).build();
+    }
+
+    class Builder extends ImmutableConnectorAction.Builder {
+    }
 }
