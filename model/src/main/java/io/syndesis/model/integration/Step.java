@@ -55,5 +55,4 @@ public interface Step extends WithId<Step>, Serializable {
         // allow access to ImmutableIntegration.Builder
     }
 
-
 }

@@ -37,6 +37,7 @@ public interface ActionDefinition extends Serializable {
     @Value.Immutable
     @JsonDeserialize(builder = ActionDefinitionStep.Builder.class)
     @ImmutablesStyle
+    @SuppressWarnings("immutables")
     interface ActionDefinitionStep extends WithName, WithProperties, Serializable {
 
         final class Builder extends ImmutableActionDefinitionStep.Builder {

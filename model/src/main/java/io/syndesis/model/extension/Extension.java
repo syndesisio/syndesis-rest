@@ -32,9 +32,12 @@ import java.util.Optional;
 @Value.Immutable
 @JsonDeserialize(builder = Extension.Builder.class)
 @NoDuplicateExtension(groups = NonBlockingValidations.class)
+@SuppressWarnings("immutables")
 public interface Extension extends WithId<Extension>, WithName, WithTags, WithConfigurationProperties, Serializable {
 
-    enum Status { Draft, Installed, Deleted}
+    enum Status {
+        Draft, Installed, Deleted
+    }
 
     @Override
     default Kind getKind() {
@@ -48,11 +51,6 @@ public interface Extension extends WithId<Extension>, WithName, WithTags, WithCo
 
     @NotNull
     String getDescription();
-
-    @Override
-    default Extension withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
 
     class Builder extends ImmutableExtension.Builder {
     }

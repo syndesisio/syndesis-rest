@@ -15,17 +15,20 @@
  */
 package io.syndesis.model.techextension;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import io.syndesis.model.Kind;
-import io.syndesis.model.WithId;
-import org.immutables.value.Value;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import io.syndesis.model.Kind;
+import io.syndesis.model.WithId;
+
+import org.immutables.value.Value;
+
 @Value.Immutable
 @JsonDeserialize(builder = TechExtensionAction.Builder.class)
+@SuppressWarnings("immutables")
 public interface TechExtensionAction extends WithId<TechExtensionAction>, Serializable {
 
     @Override

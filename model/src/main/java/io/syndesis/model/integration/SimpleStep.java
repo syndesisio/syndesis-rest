@@ -29,10 +29,12 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = SimpleStep.Builder.class)
+@SuppressWarnings("immutables")
 public interface SimpleStep extends Step {
 
     @Override
-    @Value.Default default Kind getKind() {
+    @Value.Default
+    default Kind getKind() {
         return Kind.Step;
     }
 
@@ -54,11 +56,6 @@ public interface SimpleStep extends Step {
 
     @Override
     String getName();
-
-    @Override
-    default SimpleStep withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
 
     class Builder extends ImmutableSimpleStep.Builder {
         // allow access to ImmutableSimpleStep.Builder

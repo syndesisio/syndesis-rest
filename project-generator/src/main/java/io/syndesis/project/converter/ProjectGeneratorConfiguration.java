@@ -39,7 +39,7 @@ public class ProjectGeneratorConfiguration {
     }
 
     @Bean
-    public StepVisitorFactoryRegistry registry(List<StepVisitorFactory> factories) {
+    public StepVisitorFactoryRegistry registry(List<StepVisitorFactory<?>> factories) {
         return new StepVisitorFactoryRegistry(factories);
     }
 

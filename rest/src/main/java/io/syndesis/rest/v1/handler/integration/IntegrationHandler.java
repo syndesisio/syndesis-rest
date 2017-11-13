@@ -15,11 +15,44 @@
  */
 package io.syndesis.rest.v1.handler.integration;
 
+import static io.syndesis.rest.v1.handler.integration.IntegrationSupportHandler.EXPORT_MODEL_FILE_NAME;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+import javax.persistence.EntityNotFoundException;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+import javax.validation.groups.ConvertGroup;
+import javax.validation.groups.Default;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriInfo;
+
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Component;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
 import io.syndesis.core.Json;
 import io.syndesis.dao.init.ModelData;
 import io.syndesis.dao.manager.DataManager;
+import io.syndesis.dao.manager.EncryptionComponent;
 import io.syndesis.inspector.Inspectors;
 import io.syndesis.model.Kind;
 import io.syndesis.model.ListResult;
@@ -45,38 +78,6 @@ import io.syndesis.rest.v1.operations.PaginationOptionsFromQueryParams;
 import io.syndesis.rest.v1.operations.SortOptionsFromQueryParams;
 import io.syndesis.rest.v1.operations.Updater;
 import io.syndesis.rest.v1.operations.Validating;
-import io.syndesis.dao.manager.EncryptionComponent;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
-
-import javax.persistence.EntityNotFoundException;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-import javax.validation.groups.ConvertGroup;
-import javax.validation.groups.Default;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.core.StreamingOutput;
-import javax.ws.rs.core.UriInfo;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import static io.syndesis.rest.v1.handler.integration.IntegrationSupportHandler.EXPORT_MODEL_FILE_NAME;
-
 
 @Path("/integrations")
 @Api(value = "integrations")
@@ -129,20 +130,20 @@ public class IntegrationHandler extends BaseHandler
     @GET
     @Path("/{id}/export.zip")
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public StreamingOutput export(@NotNull @PathParam("id") @ApiParam(required = true) String id) throws IOException {
-        ArrayList<ModelData> models = new ArrayList<>();
+    public StreamingOutput export(@NotNull @PathParam("id") @ApiParam(required = true) String id) {
+        ArrayList<ModelData<?>> models = new ArrayList<>();
 
         Integration integration = this.get(id);
-        models.add(new ModelData(Kind.Integration, integration));
+        models.add(new ModelData<Integration>(Kind.Integration, integration));
 
         for (Step step : integration.getSteps()) {
             Optional<Connection> c = step.getConnection();
             if( c.isPresent() ) {
                 Connection connection = c.get();
-                models.add(new ModelData(Kind.Connection, connection));
+                models.add(new ModelData<Connection>(Kind.Connection, connection));
                 Connector connector = getDataManager().fetch(Connector.class, connection.getConnectorId().get());
                 if( connector != null ) {
-                    models.add(new ModelData(Kind.Connector, connector));
+                    models.add(new ModelData<Connector>(Kind.Connector, connector));
                 }
             }
         }

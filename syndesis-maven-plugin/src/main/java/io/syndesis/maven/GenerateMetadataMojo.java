@@ -16,9 +16,9 @@
 package io.syndesis.maven;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -45,7 +45,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.utils.StringUtils;
-
 
 /**
  * Helper Maven plugin
@@ -114,7 +113,7 @@ public class GenerateMetadataMojo extends AbstractMojo {
             try {
                 Files.find(dir, Integer.MAX_VALUE, (path, basicFileAttributes) -> String.valueOf(path).endsWith(".properties")).forEach(path -> {
                     Properties p = new Properties();
-                    try (Reader reader = new FileReader(path.toFile())) {
+                    try (Reader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
                         getLog().info("Loading annotations properties from: " + path);
                         p.load(reader);
                         assignProperties(p);

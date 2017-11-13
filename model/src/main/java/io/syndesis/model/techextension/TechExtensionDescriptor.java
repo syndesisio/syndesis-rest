@@ -15,12 +15,13 @@
  */
 package io.syndesis.model.techextension;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import org.immutables.value.Value;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = TechExtensionDescriptor.Builder.class)
