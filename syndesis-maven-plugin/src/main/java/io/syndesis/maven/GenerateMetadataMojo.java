@@ -22,11 +22,9 @@ import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Properties;
+import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.syndesis.core.Json;
@@ -35,6 +33,9 @@ import io.syndesis.model.techextension.TechExtensionAction;
 import io.syndesis.model.techextension.TechExtensionDataShape;
 import io.syndesis.model.techextension.TechExtensionDescriptor;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
+import org.apache.maven.artifact.factory.DefaultArtifactFactory;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
@@ -85,7 +86,11 @@ public class GenerateMetadataMojo extends AbstractMojo {
     @Parameter(readonly = true)
     private String source;
 
-    protected ObjectMapper objectMapper = Json.mapper();
+    @Parameter(defaultValue = "false")
+    private Boolean listAllArtifacts;
+
+    protected final DefaultArtifactFactory artifactFactory = new DefaultArtifactFactory();
+    protected final ObjectMapper objectMapper = Json.mapper();
     protected TechExtension.Builder techExtensionBuilder = new TechExtension.Builder();
 
     @Override
@@ -233,13 +238,19 @@ public class GenerateMetadataMojo extends AbstractMojo {
     }
 
     protected void includeDependencies() {
-        List<String> dependencies = new ArrayList<>();
-        for (Artifact artifact : this.project.getArtifacts()) {
-            dependencies.add(artifact.getId());
+        Stream<String> artifacts;
+
+        if (Boolean.TRUE.equals(listAllArtifacts)) {
+            artifacts = project.getArtifacts().stream()
+                .filter(artifact -> StringUtils.equals(artifact.getScope(), DefaultArtifact.SCOPE_PROVIDED))
+                .map(Artifact::getId);
+        } else {
+            artifacts = this.project.getDependencies().stream()
+                .filter(dependency -> StringUtils.equals(dependency.getScope(), DefaultArtifact.SCOPE_PROVIDED))
+                .map(dependency -> toArtifact(dependency).getId());
         }
 
-        Collections.sort(dependencies);
-        techExtensionBuilder.dependencies(dependencies);
+        artifacts.sorted().forEachOrdered(techExtensionBuilder::addDependency);
     }
 
     protected void saveExtensionMetaData(TechExtension jsonObject) throws MojoExecutionException {
@@ -254,5 +265,15 @@ public class GenerateMetadataMojo extends AbstractMojo {
         } catch (IOException e) {
             throw new MojoExecutionException("Cannot write to file: " + metadataDestination, e);
         }
+    }
+
+    protected Artifact toArtifact(Dependency dependency) {
+        return artifactFactory.createArtifact(
+            dependency.getGroupId(),
+            dependency.getArtifactId(),
+            dependency.getVersion(),
+            dependency.getScope(),
+            dependency.getType()
+        );
     }
 }
