@@ -13,7 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-@ImmutablesStyle
-package io.syndesis.model.techextension;
+package io.syndesis.model;
 
-import io.syndesis.core.immutable.ImmutablesStyle;
+import java.io.Serializable;
+import java.util.Optional;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import org.immutables.value.Value;
+
+@Value.Immutable
+@JsonDeserialize(builder = DataShape.Builder.class)
+public interface DataShape extends Serializable {
+
+    String getKind();
+
+    String getType();
+
+    String getSpecification();
+
+    Optional<byte[]> getExemplar();
+
+    class Builder extends ImmutableDataShape.Builder {
+    }
+
+
+}

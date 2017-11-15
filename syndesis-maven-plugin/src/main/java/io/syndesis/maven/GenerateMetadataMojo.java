@@ -28,10 +28,10 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.syndesis.core.Json;
-import io.syndesis.model.techextension.TechExtension;
-import io.syndesis.model.techextension.TechExtensionAction;
-import io.syndesis.model.techextension.TechExtensionDataShape;
-import io.syndesis.model.techextension.TechExtensionDescriptor;
+import io.syndesis.model.DataShape;
+import io.syndesis.model.action.ExtensionAction;
+import io.syndesis.model.action.ExtensionDescriptor;
+import io.syndesis.model.extension.Extension;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
@@ -94,7 +94,7 @@ public class GenerateMetadataMojo extends AbstractMojo {
     private ArtifactFactory artifactFactory;
 
     protected final ObjectMapper objectMapper = Json.mapper();
-    protected TechExtension.Builder techExtensionBuilder = new TechExtension.Builder();
+    protected Extension.Builder extensionBuilder = new Extension.Builder();
 
     @Override
     public void execute() throws MojoExecutionException {
@@ -103,7 +103,7 @@ public class GenerateMetadataMojo extends AbstractMojo {
         overrideConfigFromMavenPlugin();
         includeDependencies();
 
-        saveExtensionMetaData(techExtensionBuilder.build());
+        saveExtensionMetaData(extensionBuilder.build());
     }
 
     protected void processAnnotations() throws MojoExecutionException {
@@ -148,7 +148,7 @@ public class GenerateMetadataMojo extends AbstractMojo {
             return;
         }
 
-        TechExtensionAction.Builder actionBuilder = new TechExtensionAction.Builder();
+        ExtensionAction.Builder actionBuilder = new ExtensionAction.Builder();
         actionBuilder.id(p.getProperty("id"));
         actionBuilder.name(p.getProperty("name"));
         // fixed value
@@ -160,22 +160,22 @@ public class GenerateMetadataMojo extends AbstractMojo {
             actionBuilder.tags(Arrays.asList(strings));
         }
 
-        TechExtensionDescriptor.Builder descriptorBuilder = new TechExtensionDescriptor.Builder();
-        descriptorBuilder.kind(p.getProperty("kind"));
+        ExtensionDescriptor.Builder descriptorBuilder = new ExtensionDescriptor.Builder();
+        descriptorBuilder.kind(ExtensionAction.Kind.valueOf(p.getProperty("kind")));
         descriptorBuilder.entrypoint(p.getProperty("entrypoint"));
 
-        TechExtensionDataShape.Builder inputBuilder = new TechExtensionDataShape.Builder();
+        DataShape.Builder inputBuilder = new DataShape.Builder();
         inputBuilder.kind(p.getProperty("inputDataShape"));
         descriptorBuilder.inputDataShape(inputBuilder.build());
 
-        TechExtensionDataShape.Builder outputBuilder = new TechExtensionDataShape.Builder();
+        DataShape.Builder outputBuilder = new DataShape.Builder();
         outputBuilder.kind(p.getProperty("outputDataShape"));
         descriptorBuilder.outputDataShape(outputBuilder.build());
 
         actionBuilder.descriptor(descriptorBuilder.build());
 
 
-        techExtensionBuilder.addAction(actionBuilder.build());
+        extensionBuilder.addAction(actionBuilder.build());
     }
 
     /**
@@ -184,25 +184,25 @@ public class GenerateMetadataMojo extends AbstractMojo {
      */
     protected void tryImportingPartialJSON() throws MojoExecutionException {
         if(StringUtils.isNotEmpty(source)){
-            TechExtension techExtension ;
+            Extension extension ;
             try {
-                techExtension = objectMapper.readValue(new File(source), TechExtension.class);
+                extension = objectMapper.readValue(new File(source), Extension.class);
                 getLog().info("Loaded base partial metadata configuration file: " + source);
             } catch (IOException e) {
                 throw new MojoExecutionException("Invalid input json: " + source, e );
             }
-            techExtensionBuilder = techExtensionBuilder.createFrom(techExtension);
+            extensionBuilder = extensionBuilder.createFrom(extension);
         } else {
             File targetFile = new File(metadataDestination);
             if (targetFile.exists()) {
-                TechExtension techExtension;
+                Extension extension;
                 try {
-                    techExtension = objectMapper.readValue(targetFile, TechExtension.class);
+                    extension = objectMapper.readValue(targetFile, Extension.class);
                     getLog().info("Loaded base partial metadata configuration file: " + targetFile.getAbsolutePath());
                 } catch (IOException e) {
                     throw new MojoExecutionException("Invalid input json: " + targetFile.getAbsolutePath(), e );
                 }
-                techExtensionBuilder = techExtensionBuilder.createFrom(techExtension);
+                extensionBuilder = extensionBuilder.createFrom(extension);
             }
         }
     }
@@ -215,28 +215,28 @@ public class GenerateMetadataMojo extends AbstractMojo {
         if(StringUtils.isBlank(artifactId)){
             artifactId = project.getArtifactId();
         }
-        techExtensionBuilder.extensionId(groupId + ":" + artifactId);
+        extensionBuilder.extensionId(groupId + ":" + artifactId);
 
         if(StringUtils.isBlank(version)){
             version = project.getVersion();
         }
-        techExtensionBuilder.version(version);
+        extensionBuilder.version(version);
 
         if(StringUtils.isNotEmpty(name)) {
-            techExtensionBuilder.name(name);
+            extensionBuilder.name(name);
         }
 
         if(StringUtils.isNotEmpty(description)) {
-            techExtensionBuilder.description(description);
+            extensionBuilder.description(description);
         }
 
         if(StringUtils.isNotEmpty(icon)) {
-            techExtensionBuilder.icon(icon);
+            extensionBuilder.icon(icon);
         }
 
         if(StringUtils.isNotEmpty(tags)){
             String[] split = tags.split(",");
-            techExtensionBuilder.tags(Arrays.asList(split));
+            extensionBuilder.tags(Arrays.asList(split));
         }
     }
 
@@ -253,10 +253,10 @@ public class GenerateMetadataMojo extends AbstractMojo {
                 .map(dependency -> toArtifact(dependency).getId());
         }
 
-        artifacts.sorted().forEachOrdered(techExtensionBuilder::addDependency);
+        artifacts.sorted().forEachOrdered(extensionBuilder::addDependency);
     }
 
-    protected void saveExtensionMetaData(TechExtension jsonObject) throws MojoExecutionException {
+    protected void saveExtensionMetaData(Extension jsonObject) throws MojoExecutionException {
         File targetFile = new File(metadataDestination);
         if (!targetFile.getParentFile().exists() &&
             !targetFile.getParentFile().mkdirs()) {

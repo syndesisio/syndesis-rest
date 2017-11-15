@@ -13,29 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package io.syndesis.model.connection;
+package io.syndesis.model.action;
 
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.util.List;
+import javax.validation.constraints.NotNull;
 
-import java.io.Serializable;
-import java.util.Optional;
+import io.syndesis.model.validation.AllValidations;
 
-import org.immutables.value.Value;
+public interface WithActions<T extends Action<? extends ActionDescriptor>> {
 
-@Value.Immutable
-@JsonDeserialize(builder = DataShape.Builder.class)
-public interface DataShape extends Serializable {
-
-    String getKind();
-
-    String getType();
-
-    String getSpecification();
-
-    Optional<byte[]> getExemplar();
-
-    class Builder extends ImmutableDataShape.Builder {
-    }
-
+    @NotNull(groups = AllValidations.class)
+    List<T> getActions();
 
 }

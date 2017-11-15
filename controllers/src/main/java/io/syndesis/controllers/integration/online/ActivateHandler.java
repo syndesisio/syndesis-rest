@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import io.syndesis.controllers.ControllersConfigurationProperties;
 import io.syndesis.dao.manager.EncryptionComponent;
@@ -34,12 +33,10 @@ import io.syndesis.controllers.integration.StatusChangeHandlerProvider;
 import io.syndesis.core.Names;
 import io.syndesis.core.SyndesisServerException;
 import io.syndesis.dao.manager.DataManager;
-import io.syndesis.model.connection.Connector;
 import io.syndesis.model.integration.Integration;
 import io.syndesis.model.integration.IntegrationRevision;
 import io.syndesis.openshift.DeploymentData;
 import io.syndesis.openshift.OpenShiftService;
-import io.syndesis.project.converter.GenerateProjectRequest;
 import io.syndesis.project.converter.ProjectGenerator;
 
 public class ActivateHandler extends BaseHandler implements StatusChangeHandlerProvider.StatusChangeHandler {
@@ -49,9 +46,16 @@ public class ActivateHandler extends BaseHandler implements StatusChangeHandlerP
     private final ControllersConfigurationProperties properties;
     private final EncryptionComponent encryptionComponent;
 
-    /* default */ ActivateHandler(DataManager dataManager, OpenShiftService openShiftService,
-                                  ProjectGenerator projectConverter, ControllersConfigurationProperties properties, EncryptionComponent encryptionComponent) {
+    @SuppressWarnings("PMD.DefaultPackage")
+    ActivateHandler(
+            DataManager dataManager,
+            OpenShiftService openShiftService,
+            ProjectGenerator projectConverter,
+            ControllersConfigurationProperties properties,
+            EncryptionComponent encryptionComponent) {
+
         super(openShiftService);
+
         this.dataManager = dataManager;
         this.projectConverter = projectConverter;
         this.properties = properties;
@@ -206,18 +210,10 @@ public class ActivateHandler extends BaseHandler implements StatusChangeHandlerP
 
     private InputStream createProjectFiles(Integration integration) {
         try {
-            GenerateProjectRequest request = new GenerateProjectRequest.Builder()
-                .integration(integration)
-                .connectors(fetchConnectorsMap())
-                .build();
-            return projectConverter.generate(request);
+            return projectConverter.generate(integration);
         } catch (IOException e) {
             throw SyndesisServerException.launderThrowable(e);
         }
-    }
-
-    private Map<String, Connector> fetchConnectorsMap() {
-        return dataManager.fetchAll(Connector.class).getItems().stream().collect(Collectors.toMap(o -> o.getId().get(), o -> o));
     }
 
     // ===============================================================================
