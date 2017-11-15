@@ -15,6 +15,8 @@
  */
 package io.syndesis.project.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -42,6 +44,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+
 import io.syndesis.connector.catalog.ConnectorCatalog;
 import io.syndesis.connector.catalog.ConnectorCatalogProperties;
 import io.syndesis.core.MavenProperties;
@@ -61,15 +72,6 @@ import io.syndesis.project.converter.visitor.EndpointStepVisitor;
 import io.syndesis.project.converter.visitor.ExpressionFilterStepVisitor;
 import io.syndesis.project.converter.visitor.RuleFilterStepVisitor;
 import io.syndesis.project.converter.visitor.StepVisitorFactoryRegistry;
-import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
-import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @RunWith(Parameterized.class)
 public class DefaultProjectGeneratorTest {
@@ -416,7 +418,7 @@ public class DefaultProjectGeneratorTest {
         runtimePath.toFile().deleteOnExit();
 
         assertFileContents(generatorProperties, runtimePath.resolve("src/main/resources/syndesis.yml"), "test-mapper-syndesis.yml");
-        assertThat(new String(Files.readAllBytes(runtimePath.resolve("src/main/resources/mapping-step-2.json")))).isEqualTo("{}");
+        assertThat(new String(Files.readAllBytes(runtimePath.resolve("src/main/resources/mapping-step-2.json")), StandardCharsets.UTF_8)).isEqualTo("{}");
     }
 
     private Path generate(GenerateProjectRequest request, ProjectGeneratorProperties generatorProperties) throws IOException {
@@ -520,7 +522,7 @@ public class DefaultProjectGeneratorTest {
             throw new IllegalArgumentException("Unable to find te required resource (" + expectedFileName + ")");
         }
 
-        assertThat(new String(Files.readAllBytes(actualFilePath))).isEqualTo(
+        assertThat(new String(Files.readAllBytes(actualFilePath), StandardCharsets.UTF_8)).isEqualTo(
             new String(Files.readAllBytes(Paths.get(resource.toURI())), StandardCharsets.UTF_8)
                                                         );
     }

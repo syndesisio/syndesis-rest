@@ -75,6 +75,7 @@ public class IntegrationSupportHandler {
                     break;
                 }
                 if (EXPORT_MODEL_FILE_NAME.equals(entry.getName())) {
+                    @SuppressWarnings("rawtypes")
                     ModelData[] models = Json.mapper().readValue(new FilterInputStream(zis) {
                         @Override
                         public void close() throws IOException {
@@ -99,9 +100,9 @@ public class IntegrationSupportHandler {
         }
     }
 
-    public int importModels(ModelData... models) throws IOException {
+    public int importModels(ModelData<?>... models) throws IOException {
         int count = 0;
-        for (ModelData model : models) {
+        for (ModelData<?> model : models) {
             switch (model.getKind()) {
                 case Integration:
 

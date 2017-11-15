@@ -23,24 +23,24 @@ import java.util.ServiceLoader;
 
 public class StepVisitorFactoryRegistry {
 
-  private final Map<String, StepVisitorFactory> MAP = new HashMap<>();
+  private final Map<String, StepVisitorFactory<?>> MAP = new HashMap<>();
 
-  private final StepVisitorFactory FALLBACK_STEP_FACTORY = new GenericStepVisitor.Factory();
+  private final StepVisitorFactory<?> FALLBACK_STEP_FACTORY = new GenericStepVisitor.Factory();
 
-  public StepVisitorFactoryRegistry(List<StepVisitorFactory> factories) {
+  public StepVisitorFactoryRegistry(List<StepVisitorFactory<?>> factories) {
     factories.forEach(this::register);
   }
 
-  public void register(StepVisitorFactory factory) {
+  public void register(StepVisitorFactory<?> factory) {
     MAP.put(factory.getStepKind(), factory);
   }
 
-
-  public StepVisitorFactory get(String kind) {
+  public StepVisitorFactory<?> get(String kind) {
     if (MAP.containsKey(kind)) {
       return MAP.get(kind);
     } else {
-      for (StepVisitorFactory factory : ServiceLoader.load(StepVisitorFactory.class, Thread.currentThread().getContextClassLoader())) {
+      for (StepVisitorFactory<?> factory : ServiceLoader.load(StepVisitorFactory.class,
+          Thread.currentThread().getContextClassLoader())) {
         if (factory.getStepKind().equals(kind)) {
           return factory;
         }

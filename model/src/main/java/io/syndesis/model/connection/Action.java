@@ -36,6 +36,7 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonDeserialize(builder = Action.Builder.class)
 @JsonIgnoreProperties(value = {"properties", "inputDataShape", "outputDataShape"}, allowGetters = true)
+@SuppressWarnings("immutables")
 public interface Action extends WithId<Action>, WithName, WithTags, WithConfigurationProperties, Serializable {
 
     enum Pattern { From, To }
@@ -68,10 +69,6 @@ public interface Action extends WithId<Action>, WithName, WithTags, WithConfigur
     }
 
     @Override
-    default Action withId(String id) {
-        return new Builder().createFrom(this).id(id).build();
-    }
-
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     default Map<String, ConfigurationProperty> getProperties() {
         ActionDefinition definition = getDefinition();

@@ -27,6 +27,7 @@ import org.immutables.value.Value;
 
 @Value.Immutable
 @JsonDeserialize(builder = TechExtension.Builder.class)
+@SuppressWarnings("immutables")
 public interface TechExtension extends WithId<TechExtension>, Serializable {
 
     @Override
