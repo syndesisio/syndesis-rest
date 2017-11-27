@@ -1,3 +1,10 @@
+---------
+# Repos moved
+
+**This repository is not longer active and has been moved to https://github.com/syndesisio/syndesis (code & issues)**
+
+----------
+
 # Syndesis REST API
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/daf25eee770345c9b72a2b8aecb90182)](https://www.codacy.com/app/syndesisio/syndesis-rest)
